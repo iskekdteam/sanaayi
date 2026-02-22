@@ -13,18 +13,21 @@ jobs:
         with:
           node-version: 18
 
-      - name: Build Preparation
+      - name: Prepare Workspace
         run: |
-          npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
           mkdir -p www
-          cp -v *.html www/ 2>/dev/null || true
-          cp -v *.png www/ 2>/dev/null || true
-          cp -v *.json www/ 2>/dev/null || true
-          cp -v *.css www/ 2>/dev/null || true
-          cp -v *.js www/ 2>/dev/null || true
+          cp *.html www/ 2>/dev/null || true
+          cp *.png www/ 2>/dev/null || true
+          cp *.jpg www/ 2>/dev/null || true
+          cp *.css www/ 2>/dev/null || true
+          cp *.js www/ 2>/dev/null || true
+          echo '{"name": "sanaayi", "version": "1.0.0"}' > package.json
 
-      - name: Initialize Capacitor
+      - name: Install Tools
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+
+      - name: Initialize Android Project
         run: |
           npx cap init Sanaayi com.sanaayi.app --web-dir www
           npx cap add android
@@ -35,8 +38,8 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Save APK
         uses: actions/upload-artifact@v3
         with:
-          name: Sanaayi-App
+          name: Sanaayi-App-Final
           path: android/app/build/outputs/apk/debug/app-debug.apk
