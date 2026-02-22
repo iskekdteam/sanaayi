@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sanaayi | حسابي</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --primary: #ff5a00; --bg: #f8f9fa; --text: #333; }
+                body { 
+    font-family: 'Segoe UI', sans-serif; 
+    background: var(--bg); /* جعل الخلفية بلون التطبيق الهادئ */
+    margin: 0; 
+    height: 100vh; 
+    overflow-x: hidden; /* منع الاهتزاز الجانبي */
+}
+
+.app-frame {
+    background: var(--bg); 
+    width: 100%; 
+    max-width: 100%; /* جعل العرض يملأ الشاشة */
+    min-height: 100vh; /* جعل الطول يملأ الشاشة */
+    position: relative; 
+    display: flex; 
+    flex-direction: column;
+    box-shadow: none; /* إزالة الظل الخارجي */
+    border-radius: 0; /* إزالة الحواف الدائرية ليصبح صفحة عادية */
+}
+
+
+        /* الجزء العلوي - البروفايل */
+        .profile-top {
+            background: white; padding: 60px 25px 30px;
+            text-align: center; border-radius: 0 0 40px 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .avatar-container { position: relative; width: 110px; height: 110px; margin: 0 auto 15px; }
+        .avatar-container img { 
+            width: 100%; height: 100%; border-radius: 50%; object-fit: cover; 
+            border: 4px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .profile-top h2 { margin: 0; font-size: 20px; color: var(--text); font-weight: 800; }
+        .profile-top p { margin: 5px 0 0; color: #888; font-size: 14px; }
+
+        /* القائمة */
+        .profile-menu { flex: 1; padding: 25px; overflow-y: auto; }
+        .menu-item {
+            background: white; padding: 15px 20px; border-radius: 20px;
+            display: flex; align-items: center; gap: 15px; margin-bottom: 12px;
+            cursor: pointer; transition: 0.3s;
+        }
+        .menu-item:active { transform: scale(0.96); background: #f1f3f5; }
+        .menu-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .menu-text { flex: 1; font-weight: 600; color: #444; font-size: 15px; }
+
+        /* نافذة التعديل (Popup) */
+        .modal-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+            z-index: 3000; display: flex; align-items: flex-end;
+        }
+        .modal-content {
+            background: white; width: 100%; border-radius: 35px 35px 0 0;
+            padding: 30px 25px; box-sizing: border-box;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        
+        .input-group { margin-bottom: 15px; }
+        .input-label { display: block; font-size: 13px; font-weight: bold; color: #666; margin-bottom: 8px; margin-right: 5px;}
+        .input-field { 
+            width: 100%; border: 2px solid #f8f9fa; background: #f8f9fa; 
+            padding: 14px; border-radius: 15px; font-size: 14px; outline: none; box-sizing: border-box; font-family: inherit;
+        }
+        .input-field:focus { border-color: var(--primary); background: white; }
+
+        .btn-save {
+            background: var(--primary); color: white; border: none; width: 100%;
+            padding: 16px; border-radius: 18px; font-weight: bold; font-size: 16px;
+            cursor: pointer; margin-top: 10px; box-shadow: 0 10px 20px rgba(255, 90, 0, 0.2);
+        }
+
+        .logout-btn { color: #ff3b30; border: 1px solid #ffebeb; margin-top: 20px; }
+
+        /* شريط التنقل */
+        .bottom-nav {
+            background: white; height: 75px; display: flex; justify-content: space-around; 
+            align-items: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); border-radius: 30px 30px 0 0;
+        }
+        .nav-item { text-align: center; color: #adb5bd; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 20px; display: block; }
+        .nav-item span { font-size: 10px; font-weight: bold; }
+
+        .hidden { display: none !important; }
+        .animate-up { animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="app-frame">
+    <div class="profile-top">
+        <div class="avatar-container">
+            <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=random" alt="User">
+        </div>
+        <h2 id="profileName">جاري التحميل...</h2>
+        <p id="profilePhone">--</p>
+    </div>
+
+    <div class="profile-menu">
+        <div class="menu-item" onclick="openEditModal()">
+            <div class="menu-icon" style="background: #e3f2fd; color: #2196f3;"><i class="fa-solid fa-user-pen"></i></div>
+            <span class="menu-text">تعديل الملف الشخصي</span>
+            <i class="fa-solid fa-chevron-left" style="font-size: 12px; color: #ccc;"></i>
+        </div>
+
+        <div class="menu-item" id="logoutBtn" style="background: #fff0f0; border: 1px solid #ffebeb;">
+            <div class="menu-icon" style="color: #ff3b30;"><i class="fa-solid fa-right-from-bracket"></i></div>
+            <span class="menu-text" style="color: #ff3b30;">تسجيل الخروج</span>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal-overlay hidden">
+        <div class="modal-content animate-up">
+            <div class="modal-header">
+                <h3>تعديل بياناتك</h3>
+                <i class="fa-solid fa-xmark" style="cursor:pointer; font-size: 20px; color:#888;" onclick="closeEditModal()"></i>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">الاسم</label>
+                <input type="text" id="editName" class="input-field">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">رقم الهاتف</label>
+                <input type="tel" id="editPhone" class="input-field">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">العنوان</label>
+                <input type="text" id="editAddress" class="input-field">
+            </div>
+
+            <button class="btn-save" id="saveBtn">حفظ التغييرات</button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="location.href='client.html'"><i class="fa-solid fa-house"></i><span>الرئيسية</span></div>
+        <div class="nav-item" onclick="location.href='My-Orders.html'"><i class="fa-solid fa-clipboard-list"></i><span>طلباتي</span></div>
+        <div class="nav-item" onclick="location.href='chat.html'"><i class="fa-solid fa-comment-dots"></i><span>الرسائل</span></div>
+        <div class="nav-item active"><i class="fa-solid fa-user"></i><span>حسابي</span></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBuFYQuJxjinz7_0yTCTO-0jnvjeg-iXoQ",
+        authDomain: "sanaayi.firebaseapp.com",
+        projectId: "sanaayi",
+        storageBucket: "sanaayi.firebasestorage.app",
+        messagingSenderId: "657863522339",
+        appId: "1:657863522339:web:f7ad44ca81147d0d519996"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUserId = null;
+
+    // 1. مراقبة حالة المستخدم وجلب بياناته
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUserId = user.uid;
+            fetchUserData();
+        } else {
+            window.location.href = "login.html";
+        }
+    });
+
+    async function fetchUserData() {
+        const userDoc = await getDoc(doc(db, "users", currentUserId));
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+            document.getElementById('profileName').innerText = data.name || "مستخدم";
+            document.getElementById('profilePhone').innerText = data.phone || "بدون رقم";
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${data.name}&background=ff5a00&color=fff`;
+        }
+    }
+
+    // 2. دوال النافذة المنبثقة
+    window.openEditModal = async () => {
+        const userDoc = await getDoc(doc(db, "users", currentUserId));
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+            document.getElementById('editName').value = data.name || "";
+            document.getElementById('editPhone').value = data.phone || "";
+            document.getElementById('editAddress').value = data.address || "";
+        }
+        document.getElementById('editModal').classList.remove('hidden');
+    };
+
+    window.closeEditModal = () => {
+        document.getElementById('editModal').classList.add('hidden');
+    };
+
+    // 3. حفظ البيانات
+    document.getElementById('saveBtn').onclick = async () => {
+        const newName = document.getElementById('editName').value;
+        const newPhone = document.getElementById('editPhone').value;
+        const newAddress = document.getElementById('editAddress').value;
+
+        try {
+            await updateDoc(doc(db, "users", currentUserId), {
+                name: newName,
+                phone: newPhone,
+                address: newAddress
+            });
+            alert("تم التحديث بنجاح! ✅");
+            closeEditModal();
+            fetchUserData(); // تحديث العرض في الصفحة
+        } catch (e) {
+            alert("خطأ: " + e.message);
+        }
+    };
+
+    // 4. تسجيل الخروج
+    document.getElementById('logoutBtn').onclick = () => {
+        if(confirm("هل تريد تسجيل الخروج؟")) {
+            signOut(auth).then(() => window.location.href = "login.html");
+        }
+    };
+</script>
+
+</body>
+</html>

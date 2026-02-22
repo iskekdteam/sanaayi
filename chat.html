@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sanaayi | الدردشة</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --primary: #ff5a00; --bg: #f0f2f5; }
+body { 
+    font-family: 'Segoe UI', sans-serif; 
+    background: #ffffff; /* خلفية بيضاء سادة أو نفس لون الـ bg */
+    margin: 0; 
+    height: 100vh; 
+    display: block; /* حذفنا الـ flex والـ center */
+}
+
+
+.app-frame {
+    background: var(--bg); 
+    width: 100%; 
+    max-width: 100%; /* جعل العرض يملأ الشاشة */
+    min-height: 100vh; /* جعل الطول يملأ الشاشة */
+    position: relative; 
+    display: flex; 
+    flex-direction: column;
+    box-shadow: none; /* إزالة الظل الخارجي */
+    border-radius: 0; /* إزالة الحواف الدائرية ليصبح صفحة عادية */
+}
+
+
+
+        /* هيدر الدردشة */
+        .chat-header {
+            padding: 40px 20px 15px; background: white; border-bottom: 1px solid #eee;
+            display: flex; align-items: center; gap: 15px;
+        }
+        .back-btn { font-size: 20px; cursor: pointer; color: #333; }
+        .user-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+        .user-info h4 { margin: 0; font-size: 16px; }
+        .user-info span { font-size: 12px; color: #28a745; }
+
+        /* منطقة الرسائل */
+        .chat-messages {
+            flex: 1; padding: 20px; overflow-y: auto; background: var(--bg);
+            display: flex; flex-direction: column; gap: 15px; scrollbar-width: none;
+        }
+        .chat-messages::-webkit-scrollbar { display: none; }
+
+        .message { max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: 14px; line-height: 1.5; position: relative; }
+        
+        /* رسالة الفني (المستلمة) */
+        .received { background: white; align-self: flex-start; border-bottom-right-radius: 5px; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        /* رسالة العميل (المرسلة) */
+        .sent { background: var(--primary); align-self: flex-end; border-bottom-left-radius: 5px; color: white; box-shadow: 0 4px 10px rgba(255, 90, 0, 0.2); }
+
+        .time { font-size: 10px; display: block; margin-top: 5px; opacity: 0.7; text-align: left; }
+
+        /* منطقة الإدخال */
+        .chat-input-area {
+            padding: 15px 20px; background: white; display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.03);
+        }
+        .chat-input-area input {
+            flex: 1; border: none; background: #f1f3f5; padding: 12px 18px; border-radius: 25px; outline: none; font-size: 14px;
+        }
+        .btn-send {
+            width: 45px; height: 45px; background: var(--primary); color: white;
+            border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; font-size: 18px;
+        }
+        .btn-send:active { transform: scale(0.9); }
+    </style>
+</head>
+<body>
+
+<div class="app-frame">
+    <div class="chat-header">
+        <i class="fa-solid fa-arrow-right back-btn" onclick="history.back()"></i>
+        <img src="https://ui-avatars.com/api/?name=Chat&background=f1f3f5" class="user-avatar" id="headerAvatar" alt="User">
+        <div class="user-info">
+            <h4 id="headerName">جاري التحميل...</h4>
+            <span id="userStatus">نشط الآن</span>
+        </div>
+        <i class="fa-solid fa-phone" id="callBtn" style="margin-right: auto; color: var(--primary); cursor: pointer; display: none;"></i>
+    </div>
+
+    <div class="chat-messages" id="chatBox">
+        </div>
+
+    <div class="chat-input-area">
+        <button style="border:none; background:none; color:var(--primary); font-size: 20px;"><i class="fa-solid fa-paperclip"></i></button>
+        <input type="text" id="msgInput" placeholder="اكتب رسالتك هنا...">
+        <button class="btn-send" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBuFYQuJxjinz7_0yTCTO-0jnvjeg-iXoQ",
+        authDomain: "sanaayi.firebaseapp.com",
+        projectId: "sanaayi",
+        storageBucket: "sanaayi.firebasestorage.app",
+        messagingSenderId: "657863522339",
+        appId: "1:657863522339:web:f7ad44ca81147d0d519996"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('orderId'); 
+    let currentUser = null;
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            if (orderId) {
+                // لو فاتح محادثة معينة
+                loadChatHeader();
+                listenToMessages();
+            } else {
+                // لو فاتح القائمة الرئيسية للمحادثات
+                loadAllUserChats();
+                document.querySelector('.chat-input-area').style.display = 'none';
+                document.querySelector('.user-info h4').innerText = "رسائلي";
+            }
+        } else {
+            window.location.href = "login.html";
+        }
+    });
+
+    // --- الدالة اللي كانت ناقصة عندك ---
+    async function loadAllUserChats() {
+        const chatBox = document.getElementById('chatBox');
+        chatBox.innerHTML = '<p style="text-align:center; margin-top:20px;">جاري تحميل المحادثات...</p>';
+
+        // هنجيب الطلبات اللي المستخدم طرف فيها (سواء كعميل أو فني)
+        const q = query(collection(db, "orders"), where("participants", "array-contains", currentUser.uid));
+
+        onSnapshot(q, (snapshot) => {
+            chatBox.innerHTML = '';
+            if (snapshot.empty) {
+                chatBox.innerHTML = '<p style="text-align:center; margin-top:20px;">لا توجد محادثات حالية</p>';
+                return;
+            }
+
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const chatItem = document.createElement('div');
+                chatItem.className = 'message received'; // شكل تجريبي للقائمة
+                chatItem.style.cursor = 'pointer';
+                chatItem.style.width = '100%';
+                chatItem.style.marginBottom = '10px';
+
+                // بنشوف مين الطرف التاني عشان نعرض اسمه
+                const otherPartyName = currentUser.uid === data.clientId ? data.providerName : data.clientName;
+
+                chatItem.innerHTML = `
+                    <strong>${otherPartyName}</strong><br>
+                    <small>اضغط لفتح المحادثة</small>
+                `;
+                
+                chatItem.onclick = () => {
+                    window.location.href = `chat.html?orderId=${docSnap.id}`;
+                };
+                chatBox.appendChild(chatItem);
+            });
+        });
+    }
+
+    async function loadChatHeader() {
+        const orderSnap = await getDoc(doc(db, "orders", orderId));
+        if (orderSnap.exists()) {
+            const data = orderSnap.data();
+            const otherName = currentUser.uid === data.clientId ? data.providerName : data.clientName;
+            document.querySelector('.user-info h4').innerText = otherName;
+            document.querySelector('.user-avatar').src = `https://ui-avatars.com/api/?name=${otherName}&background=random`;
+        }
+    }
+
+    window.sendMessage = async () => {
+        const input = document.getElementById('msgInput');
+        if (input.value.trim() !== "" && orderId) {
+            await addDoc(collection(db, "orders", orderId, "messages"), {
+                senderId: currentUser.uid,
+                text: input.value,
+                timestamp: serverTimestamp()
+            });
+            input.value = "";
+        }
+    };
+
+    function listenToMessages() {
+        const q = query(collection(db, "orders", orderId, "messages"), orderBy("timestamp", "asc"));
+        onSnapshot(q, (snapshot) => {
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML = '';
+            snapshot.forEach((doc) => {
+                const msg = doc.data();
+                const isMine = msg.senderId === currentUser.uid;
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `message ${isMine ? 'sent' : 'received'}`;
+                const time = msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}) : '';
+                msgDiv.innerHTML = `${msg.text} <span class="time">${time}</span>`;
+                chatBox.appendChild(msgDiv);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    }
+
+    document.getElementById('msgInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') window.sendMessage();
+    });
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sanaayi Elite | لوحة الفني</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff5a00;
+            --primary-dark: #e65100;
+            --secondary: #1e293b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-body: #f1f5f9;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-body);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            color: var(--secondary);
+        }
+
+        /* حاوية الهاتف */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.1);
+        }
+
+        /* الهيدر الحديث */
+        .header {
+            padding: 25px 20px;
+            background: #fff;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 55px;
+            height: 55px;
+            background: var(--primary);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 5px 15px rgba(255, 90, 0, 0.3);
+        }
+
+        .user-info h2 { margin: 0; font-size: 1.2rem; font-weight: 800; }
+        .user-info p { margin: 0; color: #64748b; font-size: 0.9rem; }
+
+        /* شريط الحالة المطور */
+        .status-pill-container {
+            background: #f8fafc;
+            padding: 12px 18px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .dot-online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+        .dot-offline { background: #94a3b8; }
+
+        .toggle-switch {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        /* الطلبات */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+
+        .section-title {
+            font-weight: 800;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0,0,0,0.02);
+            transition: transform 0.2s;
+        }
+
+        .order-card:active { transform: scale(0.98); }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .client-name { font-size: 1.1rem; font-weight: 700; color: var(--secondary); }
+        
+        .status-tag {
+            padding: 4px 12px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        .info-item i { color: var(--primary); font-size: 1rem; width: 20px; }
+
+        .description-box {
+            background: #fff7ed;
+            padding: 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            border-right: 4px solid var(--primary);
+            margin: 15px 0;
+        }
+
+        /* أزرار الاتصال والعمليات */
+        .phone-bar {
+            background: #f1f5f9;
+            padding: 10px 15px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .btn-call {
+            background: var(--success);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-group { display: flex; gap: 10px; }
+
+        .btn-modern {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-accept { background: var(--primary); color: white; }
+        .btn-reject { background: #fee2e2; color: var(--danger); }
+        .btn-finish { background: var(--secondary); color: white; }
+        .btn-chat { background: #e0f2fe; color: #0369a1; }
+
+        /* نافذة المودال المحدثة */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: none; align-items: flex-end;
+        }
+
+        .modal-sheet {
+            background: white;
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            border-radius: 30px 30px 0 0;
+            padding: 30px 25px;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .form-input {
+            width: 100%;
+            padding: 14px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .bottom-nav {
+            background: white;
+            padding: 15px 0 30px;
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid #f1f1f1;
+        }
+
+        .nav-link { text-align: center; color: #94a3b8; text-decoration: none; font-size: 0.8rem; }
+        .nav-link.active { color: var(--primary); }
+        .nav-link i { font-size: 1.4rem; margin-bottom: 5px; }
+/* ضبط الهيدر ليكون حاوية للأيقونة المطلقة */
+.header {
+    position: relative;
+    padding-top: 50px !important; /* زيادة المساحة العلوية للأيقونة */
+}
+
+/* ستايل أيقونة الدعم الفني */
+.support-link-top {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 42px;
+    height: 42px;
+    background: #fff5f0; /* خلفية برتقالية خفيفة جداً */
+    color: var(--primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    text-decoration: none;
+    border: 1px solid rgba(255, 90, 0, 0.1);
+    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 100;
+}
+
+.support-link-top:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-3px) rotate(5deg);
+    box-shadow: 0 5px 15px rgba(255, 90, 0, 0.3);
+}
+
+/* النقطة الجمالية الصغيرة */
+.support-dot {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 10px;
+    height: 10px;
+    background: #ef4444; /* لون أحمر للتنبيه */
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+/* تحسين شكل الـ User Profile ليتناسب مع التصميم الجديد */
+.user-profile {
+    margin-top: 10px;
+}
+/* شريط التذكير بالعمولة */
+.debt-alert {
+    background: #fff4e5;
+    color: #663c00;
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ffe7c4;
+}
+
+/* شاشة الحظر الكامل */
+#blockScreen {
+    display: none;
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: white;
+    z-index: 5000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+}
+/* تمييز أيقونة المحفظة لو عليها مديونية */
+.nav-link i.fa-wallet {
+    position: relative;
+}
+
+/* نقطة حمراء صغيرة تظهر لو فيه مديونية - يتم التحكم فيها بالجافاسكريبت */
+.wallet-dot {
+    position: absolute;
+    top: -2px;
+    right: -5px;
+    width: 8px;
+    height: 8px;
+    background: var(--danger);
+    border-radius: 50%;
+    display: none; /* مخفية افتراضياً */
+}
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div id="debtReminder" class="debt-alert" style="display:none;">
+    <span>⚠️ عليك عمولة متأخرة: <span id="debtValue">0</span> ج.م</span>
+    <a href="support.html" style="color:var(--primary); text-decoration:none;">سدد الآن</a>
+</div>
+
+<div id="blockScreen">
+    <i class="fa-solid fa-hand-holding-dollar" style="font-size: 5rem; color: var(--danger); margin-bottom: 20px;"></i>
+    <h2>الحساب متوقف مؤقتاً</h2>
+    <p>عذراً يا هندسة، وصلت مديونيتك لـ 200 جنيه أو أكثر. يرجى سداد العمولة لتتمكن من استقبال طلبات جديدة.</p>
+    <a href="support.html" class="btn-modern btn-accept" style="text-decoration:none; width:100%">تواصل مع الدعم للسداد</a>
+</div>
+
+    <div class="header">
+        <a href="support.html" class="support-link-top" title="الدعم الفني">
+            <i class="fa-solid fa-headset"></i>
+            <span class="support-dot"></span> </a>
+
+        <div class="user-profile">
+            <div class="avatar"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+            <div class="user-info">
+                <h2 id="provName">يا هندسة</h2>
+                <p id="provSpec">جاري التحميل...</p>
+            </div>
+        </div>
+
+        <div class="status-pill-container">
+            <div class="status-indicator">
+                <span id="statusDot" class="dot dot-online"></span>
+                <span id="statusLabel">أنت متاح للعمل</span>
+            </div>
+            <button onclick="toggleOnline()" id="statusBtn" class="toggle-switch">تغيير</button>
+        </div>
+    </div>
+
+    <div class="main-content" id="ordersList">
+        <div class="section-title">
+            <span>المهام الجديدة</span>
+            <i class="fa-solid fa-sliders" style="color: #94a3b8;"></i>
+        </div>
+        <div id="loading-spinner" style="text-align: center; padding: 50px 0;">
+            <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--primary);"></i>
+            <p style="color: #64748b; margin-top: 10px;">جاري البحث عن طلبات...</p>
+        </div>
+    </div>
+
+<div class="bottom-nav">
+    <a href="#" class="nav-link active">
+        <i class="fa-solid fa-briefcase"></i><br>المهام
+    </a>
+    <a href="wallet.html" class="nav-link">
+        <i class="fa-solid fa-wallet"></i><br>المحفظة
+    </a>
+    <a href="support.html" class="nav-link">
+        <i class="fa-solid fa-circle-question"></i><br>مساعدة
+    </a>
+    <a href="#" class="nav-link" onclick="auth.signOut()">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i><br>خروج
+    </a>
+</div>
+
+
+<div id="finishOrderModal" class="modal-overlay">
+    <div class="modal-sheet">
+        <div style="width: 40px; height: 5px; background: #e2e8f0; margin: -10px auto 20px; border-radius: 10px;"></div>
+        <h3 style="margin: 0 0 10px; font-weight: 800; color: var(--primary);">إكمال المهمة</h3>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
+            حول النسبة لرقم: <span style="color: #d63384; font-weight: bold;">01104452609</span>
+        </p>
+        
+        <input type="number" id="finalPriceInput" class="form-input" placeholder="إجمالي المبلغ المحصل">
+        <input type="url" id="payImgLink" class="form-input" placeholder="رابط سكرين شوت الدفع">
+        <input type="url" id="beforeImgLink" class="form-input" placeholder="رابط صورة العمل (قبل)">
+        <input type="url" id="afterImgLink" class="form-input" placeholder="رابط صورة العمل (بعد)">
+
+        <button onclick="submitFinalReport()" id="confirmFinishBtn" class="btn-modern btn-accept" style="width: 100%; margin-top: 10px;">
+            تأكيد وإنهاء المهمة
+        </button>
+        <button onclick="closeModal()" class="btn-modern" style="width: 100%; background: transparent; color: #64748b;">إلغاء</button>
+    </div>
+</div>
+
+<script type="module">
+    // --- نفس منطق البرمجة الخاص بك بدون تغيير ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBuFYQuJxjinz7_0yTCTO-0jnvjeg-iXoQ",
+        authDomain: "sanaayi.firebaseapp.com",
+        projectId: "sanaayi",
+        storageBucket: "sanaayi.firebasestorage.app",
+        messagingSenderId: "657863522339",
+        appId: "1:657863522339:web:f7ad44ca81147d0d519996"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let isOnline = true;
+    let currentActiveOrderId = null;
+
+    onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+            if(data.role !== 'provider') window.location.href = "client.html";
+            
+            // --- التعديل الجديد: التحقق من المديونية ---
+            const debt = data.debt || 0; // تأكد أن هناك حقل في الداتا بيز باسم debt
+            
+            if (debt >= 200) {
+                // حظر الفني
+                document.getElementById('blockScreen').style.display = 'flex';
+                // نوقف تحميل الطلبات
+                return; 
+            } else if (debt > 0) {
+                // إظهار تذكير فقط إذا كان عليه مبلغ أقل من 200
+                document.getElementById('debtReminder').style.display = 'flex';
+                document.getElementById('debtValue').innerText = debt;
+            }
+            // ------------------------------------------
+
+            document.getElementById('provName').innerText = `يا ${data.name.split(' ')[0]}`;
+            document.getElementById('provSpec').innerText = `فني ${data.specialization}`;
+            isOnline = data.isOnline;
+            updateStatusUI();
+            listenToOrders(user.uid);
+        }
+    } else { window.location.href = "index.html"; }
+});
+
+    window.toggleOnline = async () => {
+        try {
+            const newStatus = !isOnline;
+            await updateDoc(doc(db, "users", auth.currentUser.uid), { isOnline: newStatus });
+            isOnline = newStatus;
+            updateStatusUI();
+        } catch (e) { alert(e.message); }
+    };
+
+    function updateStatusUI() {
+        const label = document.getElementById('statusLabel');
+        const dot = document.getElementById('statusDot');
+        const btn = document.getElementById('statusBtn');
+        
+        if (isOnline) {
+            label.innerText = "أنت متاح للعمل";
+            dot.className = "dot dot-online";
+            btn.innerText = "تعطيل";
+            btn.style.background = "#94a3b8";
+        } else {
+            label.innerText = "أنت في وضع مشغول";
+            dot.className = "dot dot-offline";
+            btn.innerText = "تفعيل";
+            btn.style.background = "var(--success)";
+        }
+    }
+
+    function listenToOrders(provId) {
+        const mySpec = document.getElementById('provSpec').innerText.replace('فني ', '').trim();
+        const q = query(collection(db, "orders"), where("status", "in", ["pending", "accepted"]));
+
+        onSnapshot(q, (snapshot) => {
+            const list = document.getElementById('ordersList');
+            list.innerHTML = '<div class="section-title"><span>المهام النشطة</span></div>';
+            
+            let hasOrders = false;
+            snapshot.forEach((docSnap) => {
+                const order = docSnap.data();
+                const isMyDirect = order.providerId === provId;
+                const isPublic = !order.providerId && order.specialization === mySpec;
+
+                if (isMyDirect || isPublic) {
+                    hasOrders = true;
+                    const isPending = order.status === 'pending';
+                    const orderDate = order.appointment ? new Date(order.appointment).toLocaleDateString('ar-EG', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : "فوري";
+
+                    const card = `
+                    <div class="order-card">
+                        <div class="card-header">
+                            <span class="client-name">${order.clientName}</span>
+                            <span class="status-tag" style="background:${isPending ? '#fff5f0':'#eafaf1'}; color:${isPending ? 'var(--primary)':'var(--success)'}">
+                                ${isPending ? 'طلب جديد' : 'قيد التنفيذ'}
+                            </span>
+                        </div>
+
+                        <div class="info-item"><i class="fa-solid fa-location-arrow"></i> ${order.address}</div>
+                        <div class="info-item"><i class="fa-solid fa-clock"></i> ${orderDate}</div>
+                        
+                        <div class="description-box">"${order.description}"</div>
+
+                        <div class="phone-bar">
+                            <span style="font-weight:700;">${order.clientPhone || '---'}</span>
+                            <a href="tel:${order.clientPhone}" class="btn-call"><i class="fa-solid fa-phone"></i> اتصل بالعميل</a>
+                        </div>
+
+                        <div class="action-group">
+                            ${isPending ? `
+                                <button class="btn-modern btn-accept" onclick="updateOrderStatus('${docSnap.id}', 'accepted')">قبول</button>
+                                <button class="btn-modern btn-reject" onclick="updateOrderStatus('${docSnap.id}', 'rejected')">رفض</button>
+                            ` : `
+                                <button class="btn-modern btn-chat" onclick="location.href='chat.html?orderId=${docSnap.id}'">مراسلة</button>
+                                <button class="btn-modern btn-finish" onclick="updateOrderStatus('${docSnap.id}', 'completed')">إنهاء</button>
+                            `}
+                        </div>
+                    </div>`;
+                    list.insertAdjacentHTML('beforeend', card);
+                }
+            });
+            if (!hasOrders) list.innerHTML += '<p style="text-align:center; color:#94a3b8; margin-top:40px;">لا توجد طلبات حالياً</p>';
+        });
+    }
+
+    window.updateOrderStatus = async (orderId, newStatus) => {
+        if (newStatus === 'completed') {
+            currentActiveOrderId = orderId;
+            document.getElementById('finishOrderModal').style.display = 'flex';
+            return;
+        }
+        try {
+            const orderRef = doc(db, "orders", orderId);
+            if (newStatus === 'rejected') {
+                await updateDoc(orderRef, { status: 'pending', providerId: null });
+            } else {
+                await updateDoc(orderRef, { status: newStatus, respondedAt: new Date() });
+            }
+        } catch (e) { alert(e.message); }
+    };
+
+    window.closeModal = () => { document.getElementById('finishOrderModal').style.display = 'none'; };
+
+    window.submitFinalReport = async () => {
+    const price = document.getElementById('finalPriceInput').value;
+    const payUrl = document.getElementById('payImgLink').value;
+    const beforeUrl = document.getElementById('beforeImgLink').value;
+    const afterUrl = document.getElementById('afterImgLink').value;
+    const btn = document.getElementById('confirmFinishBtn');
+
+    if (!price || !payUrl || !beforeUrl || !afterUrl) return alert("⚠️ أكمل البيانات المطلوبة");
+
+    btn.disabled = true; btn.innerText = "جاري الإرسال...";
+
+    try {
+        // 1. تحديث حالة الطلب وإضافة بيانات الإكمال
+        await updateDoc(doc(db, "orders", currentActiveOrderId), {
+            status: 'completed', 
+            finalPrice: price, 
+            paymentProofImg: payUrl,
+            workBeforeImg: beforeUrl, 
+            workAfterImg: afterUrl, 
+            completedAt: new Date()
+        });
+
+        // 2. تحديث مديونية الفني (إضافة 10% عمولة المنصة)
+        const commission = Number(price) * 0.10; // حساب الـ 10%
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        
+        // جلب الديون الحالية لإضافة العمولة الجديدة عليها
+        const userSnap = await getDoc(userRef);
+        const currentDebt = userSnap.data().debt || 0;
+
+        await updateDoc(userRef, {
+            debt: currentDebt + commission
+        });
+
+        closeModal();
+        alert(`✅ تم إنهاء المهمة. عمولة المنصة المستحقة: ${commission} ج.م`);
+        
+        // إعادة تحميل الصفحة لتفعيل الحظر فوراً إذا تجاوز الـ 200 جنيه
+        location.reload();
+
+    } catch (e) { 
+        alert("حدث خطأ: " + e.message); 
+    } finally { 
+        btn.disabled = false; 
+        btn.innerText = "تأكيد وإنهاء المهمة"; 
+    }
+};
+
+
+    window.auth = { signOut: () => signOut(auth) };
+</script>
+</body>
+</html>

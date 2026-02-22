@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sanaayi | طلباتي</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --primary: #ff5a00; --bg: #f8f9fa; }
+        body { 
+    font-family: 'Segoe UI', sans-serif; 
+    background: var(--bg); /* جعل الخلفية بلون التطبيق الهادئ */
+    margin: 0; 
+    height: 100vh; 
+    overflow-x: hidden; /* منع الاهتزاز الجانبي */
+}
+
+
+ .app-frame {
+    background: var(--bg); 
+    width: 100%; 
+    max-width: 100%; /* جعل العرض يملأ الشاشة */
+    min-height: 100vh; /* جعل الطول يملأ الشاشة */
+    position: relative; 
+    display: flex; 
+    flex-direction: column;
+    box-shadow: none; /* إزالة الظل الخارجي */
+    border-radius: 0; /* إزالة الحواف الدائرية ليصبح صفحة عادية */
+}
+
+
+
+        .header { padding: 35px 25px 15px; background: white; text-align: center; border-radius: 0 0 30px 30px; }
+        .header h2 { margin: 0; font-size: 20px; color: #333; }
+
+        /* تبديل التبويبات */
+        .tabs { display: flex; padding: 15px 25px; gap: 10px; }
+        .tab { 
+            flex: 1; padding: 10px; text-align: center; background: white; 
+            border-radius: 12px; font-size: 14px; font-weight: bold; color: #888; 
+            cursor: pointer; transition: 0.3s; border: 1px solid #eee;
+        }
+        .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .content { flex: 1; overflow-y: auto; padding: 10px 25px; scrollbar-width: none; }
+        .content::-webkit-scrollbar { display: none; }
+
+        /* كارت الطلب */
+        .order-card {
+            background: white; border-radius: 20px; padding: 15px; margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03); border-right: 5px solid var(--primary);
+        }
+        .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .order-id { font-size: 12px; color: #aaa; }
+        .order-status { font-size: 12px; padding: 4px 10px; border-radius: 8px; font-weight: bold; }
+        .status-active { background: #fff5f0; color: var(--primary); }
+        .status-done { background: #e8f5e9; color: #28a745; }
+
+        .order-body { display: flex; gap: 12px; align-items: center; }
+      .order-icon { 
+    width: 50px; height: 50px; background: #fff5f0; /* خلفية برتقالي فاتح جداً */
+    border-radius: 12px; display: flex; align-items: center; 
+    justify-content: center; color: var(--primary); font-size: 20px; 
+}
+    .order-info h4 { margin: 0; font-size: 16px; color: #333; }
+        .order-info p { margin: 3px 0 0; font-size: 13px; color: #777; }
+
+        .order-footer { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #eee; display: flex; justify-content: space-between; align-items: center; }
+        .btn-detail { color: var(--primary); font-size: 13px; font-weight: bold; cursor: pointer; text-decoration: none; }
+
+        /* شريط التنقل السفلي */
+        .bottom-nav {
+            background: white; height: 70px; display: flex; justify-content: space-around; 
+            align-items: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); border-radius: 30px 30px 0 0;
+        }
+        .nav-item { text-align: center; color: #adb5bd; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 20px; display: block; }
+        .nav-item span { font-size: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="app-frame">
+    <div class="header">
+        <h2>طلباتي</h2>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab(this, 'active')">قيد التنفيذ</div>
+        <div class="tab" onclick="switchTab(this, 'history')">تم الانتهاء</div>
+    </div>
+
+    <div class="content" id="ordersList">
+        <p style="text-align:center; color:#888; margin-top:50px;">جاري تحميل طلباتك...</p>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="location.href='client.html'">
+            <i class="fa-solid fa-house"></i><span>الرئيسية</span>
+        </div>
+        <div class="nav-item active" onclick="location.href='My-Orders.html'">
+            <i class="fa-solid fa-clipboard-list"></i><span>طلباتي</span>
+        </div>
+        <div class="nav-item" onclick="location.href='chat.html'">
+            <i class="fa-solid fa-comment-dots"></i><span>الرسائل</span>
+        </div>
+        <div class="nav-item" onclick="location.href='profile.html'">
+            <i class="fa-solid fa-user"></i><span>حسابي</span>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, onSnapshot, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBuFYQuJxjinz7_0yTCTO-0jnvjeg-iXoQ",
+        authDomain: "sanaayi.firebaseapp.com",
+        projectId: "sanaayi",
+        storageBucket: "sanaayi.firebasestorage.app",
+        messagingSenderId: "657863522339",
+        appId: "1:657863522339:web:f7ad44ca81147d0d519996"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentTab = 'active';
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            loadOrders(user.uid);
+        } else {
+            window.location.href = "login.html";
+        }
+    });
+
+        function loadOrders(userId) {
+        const list = document.getElementById('ordersList');
+        
+        const q = query(
+            collection(db, "orders"), 
+            where("clientId", "==", userId),
+            orderBy("createdAt", "desc")
+        );
+
+        onSnapshot(q, (snapshot) => {
+            list.innerHTML = '';
+            
+            console.log("تم جلب بيانات! عدد المستندات:", snapshot.size);
+
+            if (snapshot.empty) {
+                list.innerHTML = '<p style="text-align:center; color:#888; margin-top:50px;">لا يوجد طلبات</p>';
+                return;
+            }
+
+            snapshot.forEach((docSnap) => {
+                const order = docSnap.data();
+                const status = order.status;
+
+                console.log("طلب رقم:", docSnap.id, "الحالة:", status, "التبويب الحالي:", currentTab);
+
+                // تعديل شرط الفلترة لضمان ظهور الـ pending في 'active'
+                if (currentTab === 'active') {
+                    // في التبويب النشط: اعرض أي حاجة مش (completed أو cancelled)
+                    if (status === 'completed' || status === 'cancelled') return;
+                } else {
+                    // في التبويب المنتهي: اعرض فقط (completed أو cancelled)
+                    if (status !== 'completed' && status !== 'cancelled') return;
+                }
+
+                const card = createOrderCard(docSnap.id, order);
+                list.insertAdjacentHTML('beforeend', card);
+            });
+
+            // لو بعد الفلترة القائمة لسه فاضية
+            if (list.innerHTML === '') {
+                list.innerHTML = '<p style="text-align:center; color:#888; margin-top:50px;">لا توجد طلبات في هذا القسم</p>';
+            }
+        }, (error) => {
+            console.error("خطأ في الفايربيز:", error);
+            list.innerHTML = '<p style="color:red; text-align:center;">حدث خطأ أثناء التحميل</p>';
+        });
+    }
+
+
+        function createOrderCard(id, order) {
+        let statusText = "";
+        let statusClass = "status-active";
+        let footerAction = "";
+
+        // ده الجزء اللي بيشم حالة الطلب
+        switch(order.status) {
+            case 'pending': 
+                // دي الحالة لما العميل يبعت الطلب ولسه مفيش فني وافق
+                statusText = "جاري طلب فني... 🔍"; 
+                statusClass = "status-active"; // لون برتقالي
+                footerAction = `<span style="color:#888; font-size:12px;">في حال عدم اتاحه الفني المطلوب سيتم ابلاغ اقرب فني لك</span>`;
+                break;
+            
+            case 'accepted': 
+                statusText = "الفني في الطريق 🚚"; 
+                footerAction = `<a href="chat.html?orderId=${id}" class="btn-detail">تواصل مع الفني</a>`;
+                break;
+
+            case 'completed': 
+                statusText = "تم التنفيذ ✨"; 
+                statusClass = "status-done"; // لون أخضر
+                if(!order.rating) {
+                    footerAction = `<button onclick="openRating('${id}')" style="border:none; background:none; color:var(--primary); font-weight:bold; cursor:pointer;">تقييم الخدمة ⭐</button>`;
+                } else {
+                    footerAction = `<span style="color:#28a745">شكراً لتقييمك (${order.rating}/5)</span>`;
+                }
+                break;
+        }
+
+        const date = order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString('ar-EG') : "";
+
+        return `
+            <div class="order-card" style="border-right-color: ${order.status === 'completed' ? '#28a745' : '#ff5a00'}">
+                <div class="order-header">
+                    <span class="order-id">#${id.slice(-5)}</span>
+                    <span class="order-status ${statusClass}">${statusText}</span>
+                </div>
+                <div class="order-body">
+                    <div class="order-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <div class="order-info">
+                        <h4>${order.serviceType || 'طلب صيانة'}</h4>
+                        <p>${order.providerName || 'بإنتظار أول فني يقبل الطلب'}</p>
+                    </div>
+                </div>
+                <div class="order-footer">
+                    <span style="font-size: 11px; color: #999;">${date}</span>
+                    ${footerAction}
+                </div>
+            </div>
+        `;
+    }
+
+
+    // دالة التقييم المبسطة
+    window.openRating = async (orderId) => {
+    const rating = prompt("قيم الفني من 1 إلى 5:");
+    const ratingNum = parseInt(rating);
+
+    if (ratingNum >= 1 && ratingNum <= 5) {
+        try {
+            // 1. جلب بيانات الطلب لمعرفة من هو الفني (providerId)
+            const orderDoc = await getDoc(doc(db, "orders", orderId));
+            const orderData = orderDoc.data();
+            const providerId = orderData.providerId;
+
+            if (!providerId) return alert("لا يمكن تقييم طلب بدون فني!");
+
+            // 2. تحديث مستند الطلب (عشان الزرار يختفي ويظهر التقييم)
+            await updateDoc(doc(db, "orders", orderId), {
+                rating: ratingNum,
+                ratedAt: new Date()
+            });
+
+            // 3. تحديث بيانات الفني (حساب المتوسط)
+            const providerRef = doc(db, "users", providerId);
+            const providerDoc = await getDoc(providerRef);
+            const providerData = providerDoc.data();
+
+            // منطق حساب المتوسط:
+            // (التقييمات القديمة + التقييم الجديد) / (عدد التقييمات + 1)
+            const oldRating = providerData.rating || 0;
+            const totalReviews = providerData.reviewsCount || 0;
+            
+            const newReviewsCount = totalReviews + 1;
+            const newAverageRating = ((oldRating * totalReviews) + ratingNum) / newReviewsCount;
+
+            await updateDoc(providerRef, {
+                rating: parseFloat(newAverageRating.toFixed(1)), // رقم واحد بعد العلامة (مثلاً 4.8)
+                reviewsCount: newReviewsCount
+            });
+
+            alert("شكراً لك! تم إضافة تقييمك للفني بنجاح.");
+        } catch (e) {
+            console.error("Error updating rating:", e);
+            alert("حدث خطأ أثناء حفظ التقييم.");
+        }
+    } else {
+        alert("برجاء إدخال رقم صحيح من 1 لـ 5");
+    }
+};
+
+
+    window.switchTab = (el, type) => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        currentTab = type;
+        if (auth.currentUser) loadOrders(auth.currentUser.uid);
+    }
+</script>
+
+
+
+</body>
+</html>

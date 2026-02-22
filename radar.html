@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanaayi | جاري البحث</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --primary: #ff5a00; }
+        
+body { 
+    font-family: 'Segoe UI', sans-serif; 
+    /* تغيير التدرج من الأزرق للبرتقالي "صنايعي" المميز */
+    background: linear-gradient(135deg, #ff5a00 0%, #ff8a4d 100%); 
+    margin: 0; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    height: 100vh; 
+}
+
+.app-frame {
+    background: white; 
+    width: 100%; 
+    max-width: 420px; 
+    height: 90vh;
+    border-radius: 40px; 
+    position: relative; 
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; 
+    text-align: center;
+    /* زيادة نعومة الظل ليعطي تأثيراً عصرياً */
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+}
+
+        /* أنيميشن الرادار */
+        .radar {
+            position: relative; width: 200px; height: 200px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .radar-circle {
+            position: absolute; width: 100%; height: 100%;
+            border: 2px solid var(--primary); border-radius: 50%;
+            animation: pulse 2s infinite; opacity: 0;
+        }
+        .radar-circle:nth-child(2) { animation-delay: 0.5s; }
+        .radar-circle:nth-child(3) { animation-delay: 1s; }
+
+        @keyframes pulse {
+            0% { transform: scale(0.5); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .center-icon {
+            width: 80px; height: 80px; background: var(--primary);
+            color: white; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 35px;
+            z-index: 10; box-shadow: 0 0 20px rgba(255, 90, 0, 0.4);
+        }
+
+        h2 { margin-top: 40px; color: #333; font-size: 22px; margin-bottom: 10px; }
+        p { color: #888; padding: 0 40px; line-height: 1.6; margin-bottom: 30px; }
+
+        .cancel-btn {
+            color: #ff3b30; font-weight: bold; cursor: pointer;
+            padding: 12px 25px; border: 2px solid #ff3b30; border-radius: 15px;
+            transition: 0.3s;
+        }
+        .cancel-btn:hover { background: #ff3b30; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="app-frame">
+    <div class="radar">
+        <div class="radar-circle"></div>
+        <div class="radar-circle"></div>
+        <div class="radar-circle"></div>
+        <div class="center-icon">
+            <i class="fa-solid fa-magnifying-glass-location"></i>
+        </div>
+    </div>
+
+    <h2>جاري البحث عن فني...</h2>
+    <p>طلبك وصل لينا، وحالياً بنراجع الفنيين المتاحين عشان نختار الأنسب ليك.</p>
+
+    <div class="cancel-btn" id="cancelOrderBtn">إلغاء الطلب</div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBuFYQuJxjinz7_0yTCTO-0jnvjeg-iXoQ",
+        authDomain: "sanaayi.firebaseapp.com",
+        projectId: "sanaayi",
+        storageBucket: "sanaayi.firebasestorage.app",
+        messagingSenderId: "657863522339",
+        appId: "1:657863522339:web:f7ad44ca81147d0d519996"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('orderId');
+
+    if (!orderId) {
+        window.location.href = 'client.html';
+    } else {
+        // --- التعديل الجديد هنا: تحويل تلقائي بعد 3 ثواني ---
+        setTimeout(() => {
+            window.location.href = `My-Orders.html`;
+        }, 3000); 
+        // --------------------------------------------------
+
+        // مراقبة حالة الطلب (لو الفني وافق في الـ 3 ثواني دول أو العميل حب يلغي)
+        const unsub = onSnapshot(doc(db, "orders", orderId), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.status === 'accepted') {
+                    unsub();
+                    window.location.href = `My-Orders.html`;
+                }
+            }
+        });
+
+        // وظيفة إلغاء الطلب
+        document.getElementById('cancelOrderBtn').onclick = async () => {
+            if (confirm("هل أنت متأكد من إلغاء طلبك؟")) {
+                try {
+                    await updateDoc(doc(db, "orders", orderId), {
+                        status: 'cancelled',
+                        cancelledAt: new Date()
+                    });
+                    window.location.href = 'client.html';
+                } catch (e) {
+                    window.location.href = 'client.html';
+                }
+            }
+        };
+    }
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sanaayi | إعداد الملف الشخصي</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    <style>
+        :root {
+            --primary: #ff5a00;
+            --bg-page: #667eea;
+            --glass: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+
+        .app-frame {
+            background: var(--glass);
+            width: 100%; max-width: 420px; height: 90vh; max-height: 850px;
+            border-radius: 40px; box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: none;
+        }
+        .app-frame::-webkit-scrollbar { display: none; }
+
+        @media (max-width: 500px) {
+            .app-frame { max-width: 100%; height: 100vh; border-radius: 0; }
+        }
+
+        .content { padding: 30px; }
+        
+        /* ستايل صورة البروفايل */
+        .profile-upload {
+            text-align: center; margin-bottom: 25px; position: relative;
+        }
+        .profile-img-container {
+            width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--primary);
+            margin: 0 auto; overflow: hidden; background: #f8f9fa; display: flex; align-items: center; justify-content: center; position: relative;
+        }
+        .profile-img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .edit-icon {
+            position: absolute; bottom: 5px; left: 50%; transform: translateX(25px);
+            background: var(--primary); color: white; width: 30px; height: 30px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 2px solid white;
+        }
+
+        .section-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; display: block; border-right: 4px solid var(--primary); padding-right: 10px; }
+
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-size: 14px; color: #666; margin-bottom: 8px; }
+        textarea {
+            width: 100%; padding: 15px; border-radius: 18px; border: 2px solid #f1f3f5;
+            background: #f8f9fa; font-size: 15px; resize: none; box-sizing: border-box; font-family: inherit;
+        }
+        textarea:focus { border-color: var(--primary); outline: none; background: white; }
+
+        /* ستايل رفع البطاقة */
+        .doc-upload {
+            border: 2px dashed #adb5bd; padding: 20px; border-radius: 20px; text-align: center;
+            background: #fdfdfd; cursor: pointer; transition: 0.3s;
+        }
+        .doc-upload:hover { border-color: var(--primary); background: #fff5f0; }
+        .doc-upload i { font-size: 30px; color: #adb5bd; margin-bottom: 10px; }
+        .doc-upload p { margin: 0; font-size: 13px; color: #777; }
+
+        .btn-save {
+            background: var(--primary); color: white; border: none; width: 100%;
+            padding: 18px; border-radius: 20px; font-size: 18px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 10px 20px rgba(255, 90, 0, 0.25); margin-top: 10px;
+        }
+    /* ستايل لخانة الوقت */
+input[type="time"] {
+    width: 100%;
+    padding: 12px;
+    border-radius: 15px;
+    border: 2px solid #f1f3f5;
+    background: #f8f9fa;
+    font-family: inherit;
+}
+
+/* ستايل الـ Range (المسافة) */
+input[type="range"] {
+    cursor: pointer;
+}
+/* ستايل قائمة خطوات العمل */
+ul li {
+    position: relative;
+    margin-bottom: 8px;
+}
+ul li::before {
+    content: "\f058"; /* أيقونة Check من FontAwesome */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    right: -25px;
+    color: var(--primary);
+}
+
+    </style>
+</head>
+<body>
+
+<div class="app-frame">
+    <div class="content">
+        <h2 style="text-align: center; color: #333;">إكمال الملف الشخصي</h2>
+        <p style="text-align: center; color: #888; font-size: 14px; margin-top: -10px;">خطوة واحدة وتبدأ في استقبال الطلبات</p>
+
+        <div class="profile-upload" onclick="document.getElementById('picInput').click()">
+            <div class="profile-img-container">
+                <img id="previewImg" src="https://via.placeholder.com/150" alt="Profile">
+                <div class="edit-icon"><i class="fa-solid fa-camera"></i></div>
+            </div>
+            <input type="file" id="picInput" hidden accept="image/*" onchange="previewFile()">
+        </div>
+
+        <span class="section-title">عن خبرتك</span>
+        <div class="input-group">
+            <textarea id="bio" rows="3" placeholder="مثال: خبرة 10 سنوات في صيانة التكييف المركزي والمنزلي، متاح في القاهرة والجيزة..."></textarea>
+        </div>
+
+        <span class="section-title">الأمان والتوثيق</span>
+        <div class="input-group">
+            <label>صورة البطاقة الشخصية (وجه وظهر)</label>
+            <div class="doc-upload" onclick="document.getElementById('docInput').click()">
+                <i class="fa-solid fa-id-card"></i>
+                <p id="docName">اضغط لرفع صورة واضحة للبطاقة</p>
+            </div>
+            <input type="file" id="docInput" hidden accept="image/*">
+        </div>
+
+        <span class="section-title">الموقع</span>
+        <div class="input-group">
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 18px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-location-dot" style="color: var(--primary);"></i>
+                <span id="locationText" style="font-size: 14px; color: #555;">سيتم تحديد موقعك تلقائياً</span>
+            </div>
+        </div>
+        <span class="section-title">بيانات التواصل</span>
+<div class="input-group">
+    <div class="input-wrapper" style="position: relative;">
+        <i class="fa-solid fa-phone" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #adb5bd;"></i>
+        <input type="tel" id="rPhone" placeholder="رقم الموبايل (واتساب)" style="width: 100%; padding: 16px 45px 16px 15px; border-radius: 18px; border: 2px solid #f1f3f5; background: #f8f9fa; box-sizing: border-box;">
+    </div>
+</div>
+
+<span class="section-title">نطاق العمل (الخريطة المجانية)</span>
+<div class="input-group">
+    <div id="map" style="width: 100%; height: 280px; border-radius: 20px; border: 2px solid #f1f3f5; z-index: 1;"></div>
+    
+    <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+        <label style="font-weight: bold; color: #555;">نطاق التغطية:</label>
+        <div style="display: flex; align-items: center; background: #fff5f0; padding: 5px 10px; border-radius: 12px; border: 1px solid var(--primary);">
+            <input type="number" id="radiusInput" value="5" min="1" max="50" 
+                   style="width: 45px; border: none; background: none; font-weight: 800; color: var(--primary); font-size: 16px; outline: none; text-align: center;"
+                   oninput="syncFromInput(this.value)">
+            <span style="font-weight: 800; color: var(--primary);">كم</span>
+        </div>
+    </div>
+    
+    <input type="range" id="mapRange" min="1000" max="50000" step="1000" value="5000" 
+           style="width: 100%; accent-color: var(--primary); cursor: pointer; margin-top: 10px;" 
+           oninput="syncFromSlider(this.value)">
+</div>
+
+
+
+<span class="section-title">أوقات العمل</span>
+<div class="input-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div>
+        <label>من</label>
+        <input type="time" id="workFrom" value="09:00">
+    </div>
+    <div>
+        <label>إلى</label>
+        <input type="time" id="workTo" value="17:00">
+    </div>
+</div>
+
+<span class="section-title">كيفية العمل في المنصة</span>
+<div class="input-group">
+    <div style="background: #fff5f0; border: 1px solid #ffccbc; padding: 15px; border-radius: 18px;">
+        <ul style="margin: 0; padding-right: 20px; font-size: 13px; color: #5d4037; line-height: 1.8;">
+            <li>استقبل طلبات العملاء داخل نطاق تغطيتك.</li>
+            <li>بعد قبول الطلب، تواصل مع العميل عبر الدردشة أو الموبايل.</li>
+            <li>بعد إنهاء العمل، قم بتصوير النتيجة ورفع فاتورة بسيطة.</li>
+            <li>تُحصل المنصة عمولة <b>10%</b> فقط من قيمة كل عملية.</li>
+            <li>يجب سداد العمولة عند وصول مديونيتك لـ 200 جنيه لضمان استمرار حسابك.</li>
+        </ul>
+    </div>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding: 0 5px;">
+    <input type="checkbox" id="agreeTerms" style="width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer;">
+    <label for="agreeTerms" style="margin: 0; cursor: pointer; font-weight: bold;">أوافق على شروط العمل وعمولة المنصة</label>
+</div>
+
+        <button class="btn-save" id="saveBtn">حفظ البيانات والبدء</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBuFYQuJxjinz7_0yTCTO-0jnvjeg-iXoQ",
+        authDomain: "sanaayi.firebaseapp.com",
+        projectId: "sanaayi",
+        storageBucket: "sanaayi.firebasestorage.app",
+        messagingSenderId: "657863522339",
+        appId: "1:657863522339:web:f7ad44ca81147d0d519996"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let map, circle, marker;
+    let currentUser = null;
+
+    // --- إعدادات Cloudinary الخاصة بك ---
+    const CLOUDINARY_NAME = "dt82jyqtj";
+    const CLOUDINARY_PRESET = "sanaayi_preset"; // استبدله بالاسم الذي أنشأته (Unsigned)
+
+    // 1. مراقبة حالة المستخدم
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                if(data.bio) document.getElementById('bio').value = data.bio;
+                if(data.phone) document.getElementById('rPhone').value = data.phone;
+                if(data.profileImg) document.getElementById('previewImg').src = data.profileImg;
+            }
+        } else {
+            window.location.href = "index.html";
+        }
+    });
+
+    // 2. وظيفة الرفع إلى Cloudinary (البديلة لـ Storage)
+    async function uploadToCloudinary(file) {
+        if (!file) return null;
+        
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", CLOUDINARY_PRESET);
+
+        try {
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_NAME}/image/upload`, {
+                method: "POST",
+                body: formData
+            });
+            const data = await response.json();
+            return data.secure_url; // رابط الصورة المباشر
+        } catch (error) {
+            console.error("Cloudinary Upload Error:", error);
+            return null;
+        }
+    }
+
+    // 3. وظيفة الحفظ النهائية
+    document.getElementById('saveBtn').onclick = async () => {
+    const btn = document.getElementById('saveBtn');
+    const phone = document.getElementById('rPhone').value;
+    const bio = document.getElementById('bio').value;
+    const picFile = document.getElementById('picInput').files[0];
+    const docFile = document.getElementById('docInput').files[0];
+    
+    // التعديل الجديد: التأكد من الموافقة على الشروط
+    const agree = document.getElementById('agreeTerms').checked;
+
+    // 1. التحقق من البيانات الأساسية
+    if (!phone || !bio) {
+        return alert("⚠️ من فضلك أكمل الموبايل والنبذة الشخصية");
+    }
+
+    // 2. التحقق من الموافقة على شروط العمل
+    if (!agree) {
+        return alert("⚠️ يجب الموافقة على شروط العمل وعمولة المنصة للمتابعة");
+    }
+    
+    btn.disabled = true;
+    btn.innerText = "جاري رفع الصور والبيانات...";
+
+    try {
+        let profileImgUrl = document.getElementById('previewImg').src;
+        let docImgUrl = "";
+
+        // رفع صورة البروفايل لـ Cloudinary
+        if (picFile) {
+            const url = await uploadToCloudinary(picFile);
+            if (url) profileImgUrl = url;
+        }
+
+        // رفع صورة البطاقة لـ Cloudinary
+        if (docFile) {
+            const url = await uploadToCloudinary(docFile);
+            if (url) docImgUrl = url;
+        }
+
+        const pos = marker.getLatLng();
+
+        // تحديث بيانات Firestore
+        await updateDoc(doc(db, "users", currentUser.uid), {
+            phone: phone,
+            bio: bio,
+            profileImg: profileImgUrl,
+            idCardImg: docImgUrl || "pending_upload",
+            location: { lat: pos.lat, lng: pos.lng },
+            workRadius: parseInt(document.getElementById('mapRange').value),
+            workHours: {
+                from: document.getElementById('workFrom').value,
+                to: document.getElementById('workTo').value
+            },
+            isProfileComplete: true,
+            isApproved: false, // بيفضل false لحد ما الأدمن يراجعه
+            termsAccepted: true, // بنسيف إنه وافق على الشروط
+            updatedAt: new Date()
+        });
+
+        alert("✅ تم حفظ بياناتك بنجاح! طلبك قيد المراجعة من قبل الإدارة ، قم بتسجيل الدخول");
+        window.location.href = "provider.html";
+
+    } catch (e) {
+        alert("حدث خطأ: " + e.message);
+        btn.disabled = false;
+        btn.innerText = "حفظ البيانات والبدء";
+    }
+};
+
+
+    // 4. إعدادات الخريطة (كما هي)
+    window.initFreeMap = () => {
+        const defaultLat = 30.0444;
+        const defaultLng = 31.2357;
+        map = L.map('map').setView([defaultLat, defaultLng], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        marker = L.marker([defaultLat, defaultLng], {draggable: true}).addTo(map);
+        circle = L.circle([defaultLat, defaultLng], {
+            color: '#ff5a00', fillColor: '#ff5a00', fillOpacity: 0.2, radius: 5000 
+        }).addTo(map);
+        marker.on('drag', (e) => circle.setLatLng(e.latlng));
+    };
+
+    window.syncFromSlider = (val) => {
+        const meters = parseInt(val);
+        circle.setRadius(meters);
+        document.getElementById("radiusInput").value = meters / 1000;
+    };
+
+    window.syncFromInput = (val) => {
+        let km = parseFloat(val) || 1;
+        if (km > 50) km = 50; 
+        const meters = km * 1000;
+        circle.setRadius(meters);
+        document.getElementById("mapRange").value = meters;
+    };
+
+    window.previewFile = () => {
+        const file = document.getElementById('picInput').files[0];
+        const reader = new FileReader();
+        reader.onloadend = () => document.getElementById('previewImg').src = reader.result;
+        if (file) reader.readAsDataURL(file);
+    };
+
+    initFreeMap();
+
+    document.getElementById('docInput').onchange = function() {
+        if(this.files[0]) document.getElementById('docName').innerText = "تم اختيار البطاقة ✅";
+    };
+</script>
+
+
+
+</body>
+</html>

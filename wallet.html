@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sanaayi Pro Wallet | المحفظة الذكية</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff5a00;
+            --primary-glow: rgba(255, 90, 0, 0.3);
+            --dark-card: #1e293b;
+            --dark-bg: #0f172a;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --danger: #f43f5e;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--dark-bg);
+            margin: 0;
+            color: white;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--dark-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 80px;
+        }
+
+        /* الجزء العلوي - الكارت العملاق */
+        .wallet-top {
+            padding: 30px 20px;
+            background: linear-gradient(180deg, rgba(255,90,0,0.1) 0%, transparent 100%);
+        }
+
+        .virtual-card {
+            background: linear-gradient(135deg, var(--primary) 0%, #ff8a4d 100%);
+            border-radius: 25px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px var(--primary-glow);
+            aspect-ratio: 1.7 / 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .virtual-card::before {
+            content: ''; position: absolute; top: -50px; right: -50px;
+            width: 150px; height: 150px; background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .card-label { font-size: 0.8rem; text-transform: uppercase; opacity: 0.9; font-weight: 600; }
+        .card-balance { font-size: 2.2rem; font-weight: 900; margin: 5px 0; }
+        .card-footer { display: flex; justify-content: space-between; align-items: flex-end; }
+        .provider-name { font-size: 1rem; font-weight: 700; }
+        .chip { width: 40px; height: 30px; background: rgba(255,255,255,0.2); border-radius: 5px; }
+
+        /* شريط التنبيه للمديونية */
+        .debt-alert-box {
+            margin: 20px;
+            background: var(--dark-card);
+            border-radius: 20px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .debt-info { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.85rem; }
+        .progress-bar { height: 8px; background: #334155; border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--danger); width: 0%; transition: 1s ease-in-out; }
+
+        /* الشبكة الإحصائية */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 0 20px;
+        }
+
+        .stat-card {
+            background: var(--dark-card);
+            padding: 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .stat-card i { color: var(--primary); margin-bottom: 10px; font-size: 1.2rem; }
+        .stat-card span { display: block; color: var(--text-muted); font-size: 0.75rem; }
+        .stat-card b { font-size: 1rem; color: white; }
+
+        /* قائمة العمليات */
+        .transactions-area {
+            margin-top: 30px;
+            background: white;
+            border-top-left-radius: 35px;
+            border-top-right-radius: 35px;
+            padding: 30px 20px;
+            flex: 1;
+            color: var(--dark-bg);
+        }
+
+        .tr-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .tr-icon {
+            width: 45px; height: 45px; border-radius: 15px;
+            background: #fff5f0; color: var(--primary);
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+        }
+
+        .tr-details { flex: 1; margin: 0 15px; }
+        .tr-details h4 { margin: 0; font-size: 0.9rem; font-weight: 800; }
+        .tr-details p { margin: 0; font-size: 0.75rem; color: #64748b; }
+        .tr-value { font-weight: 900; font-size: 0.95rem; color: var(--success); }
+
+        /* أزرار الإجراءات */
+        .floating-actions {
+            position: fixed; bottom: 85px; left: 0; right: 0;
+            padding: 0 20px; display: flex; gap: 10px;
+        }
+
+        .btn-main {
+            flex: 1; background: var(--primary); color: white; border: none;
+            padding: 16px; border-radius: 18px; font-weight: 800;
+            box-shadow: 0 10px 20px var(--primary-glow); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+
+        /* الهيدر السفلي */
+        .nav-bar {
+            position: fixed; bottom: 0; width: 100%; max-width: 480px;
+            background: white; display: flex; justify-content: space-around;
+            padding: 15px 0; border-top: 1px solid #f1f5f9;
+        }
+
+        .nav-link { color: #94a3b8; text-decoration: none; text-align: center; font-size: 0.7rem; font-weight: 700; }
+        .nav-link.active { color: var(--primary); }
+        .nav-link i { font-size: 1.3rem; display: block; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="wallet-top">
+        <div class="virtual-card">
+            <div>
+                <div class="card-label">صافي أرباحك القابلة للسحب</div>
+                <div class="card-balance" id="netBalance">0.00</div>
+                <span style="font-size: 0.9rem;">جنيه مصري</span>
+            </div>
+            <div class="card-footer">
+                <div class="provider-info">
+                    <div class="provider-name" id="userName">يا هندسة</div>
+                    <div style="font-size: 0.7rem; opacity: 0.8;">Sanaayi Verified Partner</div>
+                </div>
+                <div class="chip"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="debt-alert-box">
+        <div class="debt-info">
+            <span>مديونية المنصة (عمولة 10%)</span>
+            <span id="debtText" style="color: var(--danger); font-weight: 900;">0 ج.م</span>
+        </div>
+        <div class="progress-bar">
+            <div id="debtProgress" class="progress-fill"></div>
+        </div>
+        <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 8px;">
+            * عند وصول المديونية لـ 200 ج.م سيتم تعليق استقبال الطلبات تلقائياً.
+        </p>
+    </div>
+
+    <div class="quick-stats">
+        <div class="stat-card">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>إجمالي التحصيل</span>
+            <b id="totalEarned">0 ج.م</b>
+        </div>
+        <div class="stat-card">
+            <i class="fa-solid fa-briefcase"></i>
+            <span>عمليات مكتملة</span>
+            <b id="ordersCount">0</b>
+        </div>
+    </div>
+
+    <div class="transactions-area">
+        <h3 style="margin: 0 0 20px; font-size: 1.1rem; font-weight: 900;">سجل الإيرادات</h3>
+        <div id="transactionsList">
+            <div style="text-align:center; padding: 30px;">
+                <i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color: var(--primary);"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="floating-actions">
+        <button onclick="payViaWhatsApp()" class="btn-main">
+            <i class="fa-solid fa-paper-plane"></i> سداد العمولة (01104452609)
+        </button>
+    </div>
+
+    <div class="nav-bar">
+        <a href="Provider-Dashboard.html" class="nav-link">
+            <i class="fa-solid fa-grid-2"></i>الرئيسية
+        </a>
+        <a href="wallet.html" class="nav-link active">
+            <i class="fa-solid fa-wallet"></i>المحفظة
+        </a>
+        <a href="profile.html" class="nav-link">
+            <i class="fa-solid fa-user-gear"></i>حسابي
+        </a>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBuFYQuJxjinz7_0yTCTO-0jnvjeg-iXoQ",
+        authDomain: "sanaayi.firebaseapp.com",
+        projectId: "sanaayi",
+        storageBucket: "sanaayi.firebasestorage.app",
+        messagingSenderId: "657863522339",
+        appId: "1:657863522339:web:f7ad44ca81147d0d519996"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            document.getElementById('userName').innerText = user.displayName || "يا هندسة";
+            loadWalletData(user.uid);
+        } else {
+            window.location.href = "login.html";
+        }
+    });
+
+    async function loadWalletData(uid) {
+        try {
+            const q = query(
+                collection(db, "orders"), 
+                where("providerId", "==", uid),
+                where("status", "==", "completed"),
+                orderBy("completedAt", "desc")
+            );
+
+            const snap = await getDocs(q);
+            let total = 0;
+            let count = 0;
+            let html = "";
+
+            if (snap.empty) {
+                html = `<div style="text-align:center; padding:40px; color:#94a3b8;">لا توجد بيانات مالية حتى الآن</div>`;
+            }
+
+            snap.forEach((doc) => {
+                const data = doc.data();
+                const price = parseFloat(data.finalPrice || 0);
+                total += price;
+                count++;
+
+                const date = data.completedAt ? new Date(data.completedAt.toDate()).toLocaleDateString('ar-EG', {day:'numeric', month:'short'}) : 'قيد المعالجة';
+
+                html += `
+                    <div class="tr-item">
+                        <div class="tr-icon"><i class="fa-solid fa-plus"></i></div>
+                        <div class="tr-details">
+                            <h4>${data.description.substring(0, 25)}</h4>
+                            <p>${date}</p>
+                        </div>
+                        <div class="tr-value">+ ${price} ج.م</div>
+                    </div>
+                `;
+            });
+
+            const debt = total * 0.10;
+            const net = total - debt;
+            
+            // تحديث الأرقام مع أنيميشن بسيط
+            document.getElementById('netBalance').innerText = net.toLocaleString();
+            document.getElementById('totalEarned').innerText = total.toLocaleString() + " ج.م";
+            document.getElementById('platformDebt').innerText = debt.toLocaleString() + " ج.م"; // للمسج
+            document.getElementById('debtText').innerText = debt.toLocaleString() + " ج.م";
+            document.getElementById('ordersCount').innerText = count;
+            document.getElementById('transactionsList').innerHTML = html;
+
+            // تحديث شريط التقدم (حد 200 جنيه)
+            const progress = Math.min((debt / 200) * 100, 100);
+            document.getElementById('debtProgress').style.width = progress + "%";
+
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    window.payViaWhatsApp = () => {
+        const debt = document.getElementById('debtText').innerText;
+        const msg = `يا هندسة، أنا الفني: ${auth.currentUser.displayName}\nعايز أسدد عمولة المنصة المستحقة: ${debt}`;
+        window.location.href = `https://wa.me/201104452609?text=${encodeURIComponent(msg)}`;
+    };
+</script>
+
+<span id="platformDebt" style="display:none">0</span>
+
+</body>
+</html>

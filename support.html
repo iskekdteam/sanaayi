@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sanaayi Support | الدعم الفني</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff5a00;
+            --primary-light: #fff5f0;
+            --secondary: #1e293b;
+            --bg: #f8fafc;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #64748b;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--bg);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* الهيدر البرتقالي */
+        .header {
+            padding: 40px 20px 30px;
+            background: linear-gradient(135deg, var(--primary), #ff7a33);
+            color: white;
+            text-align: center;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            box-shadow: 0 10px 20px rgba(255, 90, 0, 0.2);
+        }
+
+        .header i { font-size: 3rem; margin-bottom: 15px; }
+        .header h2 { margin: 0; font-weight: 800; }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            margin-top: -20px;
+        }
+
+        /* كروت التواصل */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .contact-card {
+            background: white;
+            padding: 20px;
+            border-radius: 25px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--secondary);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid transparent;
+            transition: 0.3s;
+        }
+
+        .contact-card:active { transform: scale(0.95); border-color: var(--primary); }
+        .contact-card i { font-size: 1.5rem; color: var(--primary); margin-bottom: 10px; display: block; }
+        .contact-card span { font-weight: 700; font-size: 0.9rem; }
+
+        /* نموذج المراسلة */
+        .ticket-form {
+            background: white;
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .ticket-form h3 { margin-top: 0; font-size: 1.1rem; color: var(--secondary); border-right: 4px solid var(--primary); padding-right: 10px; }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.8rem; margin-bottom: 5px; color: #64748b; font-weight: 600; }
+        
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-family: inherit;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .input-group input:focus, .input-group textarea:focus { border-color: var(--primary); background: white; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 90, 0, 0.3);
+            transition: 0.3s;
+        }
+
+        .submit-btn:disabled { background: #cbd5e1; box-shadow: none; }
+
+        .footer-nav {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .back-link {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            background: var(--secondary);
+            color: white;
+            text-decoration: none;
+            border-radius: 15px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <i class="fa-solid fa-headset"></i>
+        <h2>الدعم الفني</h2>
+        <p>دايماً معاك يا هندسة لضمان شغلك</p>
+    </div>
+
+    <div class="content">
+        <div class="contact-grid">
+            <a href="https://wa.me/201104452609" class="contact-card">
+                <i class="fa-brands fa-whatsapp"></i>
+                <span>واتساب</span>
+            </a>
+            <a href="tel:01104452609" class="contact-card">
+                <i class="fa-solid fa-phone-volume"></i>
+                <span>اتصال مباشر</span>
+            </a>
+        </div>
+
+        <div class="ticket-form">
+            <h3>أرسل لنا مشكلتك</h3>
+            <div class="input-group">
+                <label>نوع المشكلة</label>
+                <select id="issueType" style="width:100%; padding:12px; border-radius:15px; border:1px solid #e2e8f0; background:#f8fafc;">
+                    <option value="financial">مشكلة في التحصيل المالي</option>
+                    <option value="technical">عطل في التطبيق</option>
+                    <option value="client">شكوى من عميل</option>
+                    <option value="other">أخرى</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>وصف المشكلة بالتفصيل</label>
+                <textarea id="issueDesc" rows="4" placeholder="اكتب هنا ما يواجهك..."></textarea>
+            </div>
+            <button id="sendBtn" onclick="sendTicket()" class="submit-btn">إرسال الطلب الآن</button>
+        </div>
+    </div>
+
+    <div class="footer-nav">
+        <a href="provider-dashboard.html" class="back-link">العودة للرئيسية</a>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBuFYQuJxjinz7_0yTCTO-0jnvjeg-iXoQ",
+        authDomain: "sanaayi.firebaseapp.com",
+        projectId: "sanaayi",
+        storageBucket: "sanaayi.firebasestorage.app",
+        messagingSenderId: "657863522339",
+        appId: "1:657863522339:web:f7ad44ca81147d0d519996"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) { currentUser = user; } 
+        else { window.location.href = "index.html"; }
+    });
+
+    window.sendTicket = async () => {
+        const type = document.getElementById('issueType').value;
+        const desc = document.getElementById('issueDesc').value;
+        const btn = document.getElementById('sendBtn');
+
+        if (!desc) {
+            alert("⚠️ فضلاً اشرح المشكلة قبل الإرسال");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "جاري الإرسال...";
+
+        try {
+            await addDoc(collection(db, "support_tickets"), {
+                uid: currentUser.uid,
+                email: currentUser.email,
+                type: type,
+                description: desc,
+                status: 'open',
+                createdAt: serverTimestamp()
+            });
+
+            alert("✅ تم استلام رسالتك يا هندسة، فريق الدعم هيتواصل معاك فوراً.");
+            document.getElementById('issueDesc').value = '';
+        } catch (e) {
+            alert("حدث خطأ: " + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "إرسال الطلب الآن";
+        }
+    };
+</script>
+</body>
+</html>

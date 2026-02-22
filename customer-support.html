@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanaayi | خدمة العملاء</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --primary: #ff5a00; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding-bottom: 50px; }
+        
+        .header { background: var(--primary); color: white; padding: 30px 20px; text-align: center; border-radius: 0 0 30px 30px; }
+        .container { max-width: 420px; margin: -20px auto 0; padding: 0 15px; }
+
+        /* الأقسام */
+        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h3 { margin-top: 0; color: #333; display: flex; align-items: center; gap: 10px; }
+
+        /* الأسئلة الشائعة */
+        .faq-item { border-bottom: 11px solid #f8f9fa; padding: 10px 0; cursor: pointer; }
+        .faq-question { font-weight: bold; display: flex; justify-content: space-between; align-items: center; color: #444; }
+        .faq-answer { display: none; padding-top: 10px; color: #666; font-size: 0.9rem; line-height: 1.5; }
+
+        /* نموذج الشكوى */
+        input, textarea, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        .btn-submit { background: var(--primary); color: white; border: none; width: 100%; padding: 15px; border-radius: 15px; font-weight: bold; cursor: pointer; }
+
+        /* الدردشة */
+        .chat-preview { display: flex; align-items: center; gap: 15px; background: #fff5f0; padding: 15px; border-radius: 15px; cursor: pointer; border: 1px dashed var(--primary); }
+        .chat-preview i { font-size: 1.5rem; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>مركز المساعدة</h1>
+    <p>كيف يمكننا مساعدتك اليوم؟</p>
+</div>
+
+<div class="container">
+    
+    <div class="card">
+        <h3><i class="fa-solid fa-circle-question"></i> الأسئلة الشائعة</h3>
+        <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-question">كيف أضمن حقي مع الفني؟ <i class="fa-solid fa-chevron-down"></i></div>
+            <div class="faq-answer">ننصح دائماً بالتعامل من خلال التطبيق وتوثيق الطلب. لا تدفع أي مبالغ إضافية خارج المتفق عليه وفي حال حدوث مشكلة تواصل معنا فوراً.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-question">هل يوجد ضمان على الصيانة؟ <i class="fa-solid fa-chevron-down"></i></div>
+            <div class="faq-answer">نعم، جميع الخدمات المقدمة عبر "صنايعي" تخضع لضمان المنصة لمدة 7 أيام على جودة التنفيذ.</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3><i class="fa-solid fa-comments"></i> دردشة مباشرة</h3>
+        <p style="font-size: 0.8rem; color: #777;">تحدث مباشرة مع أحد موظفي خدمة العملاء</p>
+        <div class="chat-preview" onclick="startAdminChat()">
+            <i class="fa-solid fa-headset"></i>
+            <div>
+                <strong>ابدأ محادثة الآن</strong><br>
+                <small>متواجدون للرد على استفساراتكم</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3><i class="fa-solid fa-circle-exclamation"></i> تقديم شكوى</h3>
+        <form id="complaintForm">
+            <select id="compType" required>
+                <option value="" disabled selected>نوع المشكلة</option>
+                <option value="تأخير">تأخير الفني</option>
+                <option value="سوء تنفيذ">سوء جودة العمل</option>
+                <option value="سلوك">سلوك غير لائق</option>
+                <option value="سعر">خلاف على السعر</option>
+            </select>
+            <input type="text" id="orderNumber" placeholder="رقم الطلب (إن وجد)">
+            <textarea id="compDetails" rows="4" placeholder="اشرح لنا المشكلة بالتفصيل..." required></textarea>
+            <button type="submit" class="btn-submit">إرسال الشكوى</button>
+        </form>
+    </div>
+
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+
+    // إعدادات Firebase الخاصة بك
+    const firebaseConfig = {
+        apiKey: "AIzaSy...", // استبدلها ببياناتك
+        authDomain: "sanaayi.firebaseapp.com",
+        projectId: "sanaayi",
+        // ... بقية البيانات
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) currentUser = user;
+    });
+
+    // فتح وإغلاق الأسئلة
+    window.toggleFaq = (el) => {
+        const answer = el.querySelector('.faq-answer');
+        const icon = el.querySelector('i');
+        const isOpen = answer.style.display === 'block';
+        answer.style.display = isOpen ? 'none' : 'block';
+        icon.className = isOpen ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
+    };
+
+    // إرسال الشكوى للـ Firebase
+    document.getElementById('complaintForm').onsubmit = async (e) => {
+        e.preventDefault();
+        if(!currentUser) return Swal.fire("خطأ", "يجب تسجيل الدخول أولاً", "error");
+
+        const btn = e.target.querySelector('button');
+        btn.disabled = true;
+        btn.innerText = "جاري الإرسال...";
+
+        try {
+            await addDoc(collection(db, "complaints"), {
+                userId: currentUser.uid,
+                userName: currentUser.displayName || "عميل",
+                type: document.getElementById('compType').value,
+                orderNo: document.getElementById('orderNumber').value,
+                details: document.getElementById('compDetails').value,
+                status: "pending", // الإدارة تغيرها لـ "resolved" بعد الحل
+                createdAt: serverTimestamp()
+            });
+
+            Swal.fire("تم الإرسال", "سيتم مراجعة شكواك والرد عليك في أقرب وقت", "success");
+            e.target.reset();
+        } catch (error) {
+            Swal.fire("خطأ", "فشل الإرسال: " + error.message, "error");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "إرسال الشكوى";
+        }
+    };
+
+    // الانتقال لدردشة الإدارة
+    window.startAdminChat = () => {
+        // يمكنك توجيه المستخدم لصفحة شات مخصصة مع معرف الإدمن ثابت
+        // أو عمل نظام تذاكر (Tickets)
+        window.location.href = "chat.html?adminChat=true";
+    };
+</script>
+</body>
+</html>

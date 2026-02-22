@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sanaayi | منصة الصنايعية</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff5a00;
+            --primary-light: #ff8b4d;
+            --bg-page: #e9ecef;
+            --glass: #ffffff;
+        }
+
+        body {
+            body { font-family: 'Cairo', sans-serif; }
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .app-frame {
+            background: var(--glass);
+            width: 100%;
+            max-width: 420px;
+            height: 90vh;
+            max-height: 850px;
+            border-radius: 40px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+        .app-frame::-webkit-scrollbar { display: none; }
+
+        @media (max-width: 500px) {
+            body { background: white; }
+            .app-frame { max-width: 100%; height: 100vh; border-radius: 0; box-shadow: none; }
+        }
+
+        .header { text-align: center; padding: 30px 20px 10px; }
+        .logo { font-size: 45px; font-weight: 900; color: var(--primary); margin: 0; }
+        .tagline { color: #6c757d; font-size: 14px; margin-top: 5px; }
+
+        .tabs-box {
+            display: flex;
+            background: #f1f3f5;
+            padding: 6px;
+            border-radius: 20px;
+            margin: 0 30px 20px;
+        }
+        .t-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            font-weight: 700;
+            color: #adb5bd;
+            cursor: pointer;
+            border-radius: 15px;
+            transition: 0.3s;
+        }
+        .t-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .content-body { padding: 0 30px 30px; }
+        .input-wrapper { position: relative; margin-bottom: 15px; }
+        .input-wrapper i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #adb5bd; }
+        input {
+            width: 100%;
+            padding: 16px 45px 16px 15px;
+            border: 2px solid #f1f3f5;
+            border-radius: 18px;
+            background: #f8f9fa;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); outline: none; background: white; }
+
+        .role-grid { display: flex; gap: 12px; margin-bottom: 20px; }
+        .role-item {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 20px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.3s;
+        }
+        .role-item.active { border-color: var(--primary); background: #fff5f0; color: var(--primary); }
+
+        /* ستايل شبكة التخصصات الجديد */
+        .spec-label { display: block; margin-bottom: 10px; font-weight: bold; font-size: 14px; color: #555; text-align: right; }
+        .spec-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .spec-item {
+            background: #f8f9fa;
+            padding: 12px 5px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+            font-size: 12px;
+            color: #666;
+        }
+        .spec-item i { font-size: 20px; display: block; margin-bottom: 5px; color: #adb5bd; }
+        .spec-item.active {
+            border-color: var(--primary);
+            background: #fff5f0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+        .spec-item.active i { color: var(--primary); }
+
+        .btn-action {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 18px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(255, 90, 0, 0.25);
+        }
+        .btn-google {
+            background: white;
+            border: 1.5px solid #dee2e6;
+            width: 100%;
+            padding: 14px;
+            border-radius: 18px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center; justify-content: center; gap: 12px; font-weight: 600; cursor: pointer;
+        }
+        .hidden { display: none; }
+  #extraSpecs {
+    width: 100%;
+    border-radius: 15px;
+    border: 2px solid var(--primary-light);
+    background: #fff5f0;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+}
+.animate-in { animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+  
+    </style>
+</head>
+<body>
+
+<div class="app-frame">
+    <div class="header">
+        <h1 class="logo">Sanaayi</h1>
+        <div class="tagline">جودة، أمان، وسهولة</div>
+    </div>
+
+    <div class="tabs-box">
+        <button class="t-btn active" id="loginTab" onclick="showAuth('login')">دخول</button>
+        <button class="t-btn" id="registerTab" onclick="showAuth('register')">جديد</button>
+    </div>
+
+    <div class="content-body">
+        <div id="loginArea">
+            <div class="input-wrapper"><i class="fa-solid fa-envelope"></i><input type="email" id="lEmail" placeholder="البريد الإلكتروني"></div>
+            <div class="input-wrapper"><i class="fa-solid fa-lock"></i><input type="password" id="lPass" placeholder="كلمة المرور"></div>
+          <div style="text-align: left; margin-top: -10px; margin-bottom: 15px;">
+    <a href="#" onclick="forgotPassword()" style="color: var(--primary); font-size: 13px; text-decoration: none; font-weight: 600;">نسيت كلمة السر؟</a>
+</div>
+
+            <button class="btn-action" id="loginExecute">دخول</button>
+        </div>
+
+        <div id="registerArea" class="hidden">
+            <div class="role-grid">
+                <div class="role-item active" id="rClient" onclick="chooseRole('client')"><i class="fa-solid fa-user-check"></i><br><strong>عميل</strong></div>
+                <div class="role-item" id="rProvider" onclick="chooseRole('provider')"><i class="fa-solid fa-screwdriver-wrench"></i><br><strong>مزود</strong></div>
+            </div>
+            
+            <div class="input-wrapper"><i class="fa-solid fa-user"></i><input type="text" id="rName" placeholder="الاسم الكامل"></div>
+            <div class="input-wrapper"><i class="fa-solid fa-envelope"></i><input type="email" id="rEmail" placeholder="البريد الإلكتروني"></div>
+            
+           <div id="provDetails" class="hidden">
+    <span class="spec-label">اختر تخصصك:</span>
+    <div class="spec-grid">
+        <div class="spec-item" onclick="setSpec('سباكة', this)"><i class="fa-solid fa-faucet"></i>سباكة</div>
+        <div class="spec-item" onclick="setSpec('كهرباء', this)"><i class="fa-solid fa-bolt"></i>كهرباء</div>
+        <div class="spec-item" onclick="setSpec('تكييف', this)"><i class="fa-solid fa-snowflake"></i>تكييف</div>
+        <div class="spec-item" onclick="setSpec('نجارة', this)"><i class="fa-solid fa-hammer"></i>نجارة</div>
+        <div class="spec-item" onclick="setSpec('دهانات', this)"><i class="fa-solid fa-paint-roller"></i>دهانات</div>
+        <div class="spec-item" onclick="setSpec('أخرى', this)"><i class="fa-solid fa-ellipsis"></i>أخرى</div>
+    </div>
+    <div id="otherSpecWrapper" class="hidden animate-in">
+        <select id="extraSpecs" onchange="selectedSpec = this.value" style="padding: 12px; margin-bottom: 15px;">
+            <option value="" disabled selected>حدد التخصص الآخر</option>
+            <option value="الوميتال">الوميتال</option>
+            <option value="فني دش">فني دش</option>
+            <option value="تنظيف">خدمات تنظيف</option>
+            <option value="نقل عفش">نقل عفش</option>
+        </select>
+    </div>
+</div>
+
+
+            <div class="input-wrapper"><i class="fa-solid fa-lock"></i><input type="password" id="rPass" placeholder="كلمة المرور"></div>
+            <button class="btn-action" id="registerExecute">ابدأ الآن</button>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px; color: #adb5bd; font-size: 13px;">أو استمر عبر</div>
+        <button class="btn-google" id="googleExecute">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">حساب جوجل
+        </button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+    import { sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    const firebaseConfig = {
+        apiKey: "AIzaSyBuFYQuJxjinz7_0yTCTO-0jnvjeg-iXoQ",
+        authDomain: "sanaayi.firebaseapp.com",
+        projectId: "sanaayi",
+        storageBucket: "sanaayi.firebasestorage.app",
+        messagingSenderId: "657863522339",
+        appId: "1:657863522339:web:f7ad44ca81147d0d519996"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    let selectedRole = 'client';
+    let selectedSpec = '';
+
+    // تبديل الواجهة بين دخول وجديد
+    window.showAuth = (type) => {
+        document.getElementById('loginArea').classList.toggle('hidden', type === 'register');
+        document.getElementById('registerArea').classList.toggle('hidden', type === 'login');
+        document.getElementById('loginTab').classList.toggle('active', type === 'login');
+        document.getElementById('registerTab').classList.toggle('active', type === 'register');
+    };
+
+    // نسيان كلمة السر
+    window.forgotPassword = async () => {
+        const email = document.getElementById('lEmail').value;
+        if (!email) return alert("من فضلك اكتب بريدك الإلكتروني أولاً.");
+        try {
+            await sendPasswordResetEmail(auth, email);
+            alert("تم إرسال رابط إعادة تعيين كلمة السر لبريدك 📧 يرجي تفقده في ال spam");
+        } catch (e) { alert("خطأ: " + e.message); }
+    };
+
+    // اختيار الدور (عميل أو مزود)
+    window.chooseRole = (role) => {
+        selectedRole = role;
+        document.getElementById('rClient').classList.toggle('active', role === 'client');
+        document.getElementById('rProvider').classList.toggle('active', role === 'provider');
+        document.getElementById('provDetails').classList.toggle('hidden', role === 'client');
+    };
+
+    // اختيار التخصص
+    window.setSpec = (spec, el) => {
+        document.querySelectorAll('.spec-item').forEach(item => item.classList.remove('active'));
+        el.classList.add('active');
+        
+        const otherWrapper = document.getElementById('otherSpecWrapper');
+        if (spec === 'أخرى') {
+            otherWrapper.classList.remove('hidden');
+            selectedSpec = document.getElementById('extraSpecs').value; 
+        } else {
+            otherWrapper.classList.add('hidden');
+            selectedSpec = spec;
+        }
+    };
+
+    // تحديث التخصص عند تغيير القائمة المنسدلة
+    document.getElementById('extraSpecs').onchange = (e) => {
+        selectedSpec = e.target.value;
+    };
+
+    // وظيفة تسجيل حساب جديد
+        // وظيفة تسجيل حساب جديد
+    document.getElementById('registerExecute').onclick = async () => {
+        const name = document.getElementById('rName').value.trim();
+        const email = document.getElementById('rEmail').value.trim();
+        const pass = document.getElementById('rPass').value;
+        
+        // التحقق من التخصص لو كان مزود
+        let finalSpec = selectedSpec;
+        if (selectedRole === 'provider' && !finalSpec) {
+            finalSpec = document.getElementById('extraSpecs').value;
+        }
+
+        // التحقق من الحقول فارغة
+        if(!name || !email || !pass) {
+            return Swal.fire({ icon: 'warning', title: 'بيانات ناقصة', text: 'من فضلك أكمل البيانات الأساسية', confirmButtonColor: '#ff5a00' });
+        }
+        if(selectedRole === 'provider' && !finalSpec) {
+            return Swal.fire({ icon: 'warning', title: 'حدد تخصصك', text: 'يجب اختيار تخصصك كمزود خدمة', confirmButtonColor: '#ff5a00' });
+        }
+        
+        try {
+            // إظهار مؤشر تحميل
+            Swal.fire({ title: 'جاري إنشاء الحساب...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+            // 1. إنشاء الحساب في Firebase Auth
+            const res = await createUserWithEmailAndPassword(auth, email, pass);
+            
+            // 2. إرسال إيميل التحقق (مجاناً)
+            await sendEmailVerification(res.user);
+
+            // 3. حفظ البيانات في Firestore
+            await setDoc(doc(db, "users", res.user.uid), {
+                uid: res.user.uid,
+                name: name,
+                email: email,
+                role: selectedRole,
+                specialization: selectedRole === 'provider' ? finalSpec : 'none',
+                isOnline: selectedRole === 'provider' ? true : false,
+                isProfileComplete: false, // قيمة افتراضية عشان يكمل ملفه بعد التفعيل
+                createdAt: new Date()
+            });
+            
+            // 4. تسجيل الخروج فوراً ومنعه من الدخول حتى يفعل الإيميل
+            await auth.signOut();
+
+            Swal.fire({
+                icon: 'success',
+                title: 'تم التسجيل بنجاح!',
+                text: 'أرسلنا لك رابط تفعيل على بريدك الإلكتروني 📧 يرجى تفقد الرسائل الغير مرغوب فيها و تفعيل الحساب لتتمكن من الدخول',
+                confirmButtonText: 'فهمت',
+                confirmButtonColor: '#ff5a00'
+            }).then(() => {
+                // العودة لتبويب الدخول أو إعادة تحميل الصفحة
+                window.location.reload(); 
+            });
+            
+        } catch (e) {
+            console.error("Register Error:", e.message);
+            let errorMsg = "حدث خطأ أثناء التسجيل: " + e.message;
+            
+            if (e.code === 'auth/email-already-in-use') errorMsg = "هذا البريد الإلكتروني مسجل بالفعل!";
+            if (e.code === 'auth/weak-password') errorMsg = "كلمة المرور ضعيفة جداً، حاول اختيار كلمة أقوى.";
+
+            Swal.fire({ icon: 'error', title: 'فشل التسجيل', text: errorMsg, confirmButtonColor: '#ff5a00' });
+        }
+    };
+
+    // وظيفة تسجيل الدخول
+    document.getElementById('loginExecute').onclick = async (e) => {
+        e.preventDefault(); 
+
+        const email = document.getElementById('lEmail').value.trim();
+        const pass = document.getElementById('lPass').value;
+
+        if(!email || !pass) {
+            return Swal.fire({ icon: 'warning', title: 'بيانات ناقصة', text: 'من فضلك ادخل البريد وكلمة المرور', confirmButtonColor: '#ff5a00' });
+        }
+
+        try {
+            Swal.fire({ title: 'جاري التحقق...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+            // 1. تسجيل الدخول
+            const res = await signInWithEmailAndPassword(auth, email, pass);
+            const user = res.user;
+
+            // 2. التحقق من تفعيل الإيميل
+            if (!user.emailVerified) {
+                await auth.signOut();
+                return Swal.fire({
+                    icon: 'error',
+                    title: 'الحساب غير مفعل!',
+                    text: 'يجب تفعيل حسابك من خلال الرابط المرسل لبريدك الإلكتروني أولاً.',
+                    confirmButtonText: 'إعادة إرسال الرابط',
+                    confirmButtonColor: '#ff5a00',
+                    showCancelButton: true,
+                    cancelButtonText: 'إغلاق'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        await sendEmailVerification(user);
+                        Swal.fire({ icon: 'success', text: 'تم إرسال رابط تفعيل جديد لبريدك.' });
+                    }
+                });
+            }
+
+            // 3. جلب البيانات من Firestore
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                
+                // 4. التوجيه الصحيح
+                if (userData.role === 'provider') {
+                    // التوجيه للداشبورد لو الملف كامل، غير كدة لصفحة provider.html
+                    if (userData.isProfileComplete === true) {
+                        window.location.replace("provider-dashboard.html");
+                    } else {
+                        window.location.replace("provider.html");
+                    }
+                } else {
+                    window.location.replace("client.html");
+                }
+            } else {
+                Swal.fire({ icon: 'error', title: 'خطأ', text: 'بيانات الحساب غير موجودة في قاعدة البيانات.' });
+            }
+
+        } catch (e) {
+            console.error("Login Error:", e.code);
+            let errorMsg = "تأكد من البريد الإلكتروني وكلمة المرور وحاول مرة أخرى.";
+            
+            if (e.code === 'auth/user-not-found') errorMsg = "هذا البريد الإلكتروني غير مسجل لدينا.";
+            else if (e.code === 'auth/wrong-password') errorMsg = "كلمة المرور التي أدخلتها غير صحيحة.";
+            else if (e.code === 'auth/network-request-failed') errorMsg = "فشل الاتصال بالإنترنت.";
+
+            Swal.fire({
+                title: 'عذراً، لم نتمكن من الدخول',
+                text: errorMsg,
+                icon: 'error',
+                confirmButtonText: 'إعادة المحاولة',
+                confirmButtonColor: '#ff5a00'
+            });
+        }
+    };
+
+    // تسجيل الدخول بجوجل الذكي
+    document.getElementById('googleExecute').onclick = async () => {
+        try {
+            // بنفتح النافذة
+            const res = await signInWithPopup(auth, googleProvider);
+            const userRef = doc(db, "users", res.user.uid);
+            const userSnap = await getDoc(userRef);
+            
+            if (userSnap.exists()) {
+                // 1. المستخدم ده مسجل عندنا قبل كدة
+                const userData = userSnap.data();
+                console.log("مستخدم قديم، دوره هو:", userData.role);
+                
+                if (userData.role === 'provider') {
+                    if (userData.isProfileComplete === true) {
+                        window.location.href = "provider-dashboard.html";
+                    } else {
+                        window.location.href = "provider.html";
+                    }
+                } else {
+                    window.location.href = "client.html";
+                }
+            } else {
+                // 2. مستخدم جديد تماماً بيسجل لأول مرة بجوجل
+                console.log("مستخدم جديد، هيتسجل حسب التابة المفتوحة:", selectedRole);
+
+                await setDoc(userRef, {
+                    uid: res.user.uid,
+                    name: res.user.displayName,
+                    email: res.user.email,
+                    role: selectedRole, 
+                    isProfileComplete: false,
+                    createdAt: new Date()
+                });
+
+                // توجيهه حسب الاختيار
+                if (selectedRole === 'provider') {
+                    window.location.href = "provider.html";
+                } else {
+                    window.location.href = "client.html";
+                }
+            }
+        } catch (e) { 
+            // التنبيه بشكل عصري واحترافي
+            Swal.fire({
+                title: 'عذراً، فشل الاتصال',
+                text: 'جاري العمل علي حل هذه المشكلة',
+                icon: 'error',
+                confirmButtonText: 'فهمت',
+                confirmButtonColor: '#ff5a00', 
+                background: '#ffffff',
+                borderRadius: '20px'
+            });
+        }
+    };
+
+
+
+
+</script>
+
+
+</body>
+</html>
