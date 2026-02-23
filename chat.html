@@ -90,10 +90,16 @@ body {
         </div>
 
     <div class="chat-input-area">
-        <button style="border:none; background:none; color:var(--primary); font-size: 20px;"><i class="fa-solid fa-paperclip"></i></button>
-        <input type="text" id="msgInput" placeholder="اكتب رسالتك هنا...">
-        <button class="btn-send" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
-    </div>
+    <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="uploadChatImage(this.files[0])">
+
+    <button onclick="document.getElementById('imageInput').click()" style="border:none; background:none; color:var(--primary); font-size: 20px;">
+        <i class="fa-solid fa-paperclip"></i>
+    </button>
+
+    <input type="text" id="msgInput" placeholder="اكتب رسالتك هنا...">
+    <button class="btn-send" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+</div>
+
 </div>
 
 <script type="module">
@@ -174,6 +180,8 @@ body {
             });
         });
     }
+    
+
 
     async function loadChatHeader() {
         const orderSnap = await getDoc(doc(db, "orders", orderId));
@@ -186,38 +194,108 @@ body {
     }
 
     window.sendMessage = async () => {
-        const input = document.getElementById('msgInput');
-        if (input.value.trim() !== "" && orderId) {
-            await addDoc(collection(db, "orders", orderId, "messages"), {
-                senderId: currentUser.uid,
-                text: input.value,
-                timestamp: serverTimestamp()
-            });
-            input.value = "";
-        }
-    };
-
-    function listenToMessages() {
-        const q = query(collection(db, "orders", orderId, "messages"), orderBy("timestamp", "asc"));
-        onSnapshot(q, (snapshot) => {
-            const chatBox = document.getElementById('chatBox');
-            chatBox.innerHTML = '';
-            snapshot.forEach((doc) => {
-                const msg = doc.data();
-                const isMine = msg.senderId === currentUser.uid;
-                const msgDiv = document.createElement('div');
-                msgDiv.className = `message ${isMine ? 'sent' : 'received'}`;
-                const time = msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}) : '';
-                msgDiv.innerHTML = `${msg.text} <span class="time">${time}</span>`;
-                chatBox.appendChild(msgDiv);
-            });
-            chatBox.scrollTop = chatBox.scrollHeight;
+    const input = document.getElementById('msgInput');
+    if (input.value.trim() !== "" && orderId) {
+        const text = input.value; // احتفظ بالنص
+        input.value = ""; // فضي الحقل فوراً عشان اليوزر يحس بالسرعة
+        await addDoc(collection(db, "orders", orderId, "messages"), {
+            senderId: currentUser.uid,
+            text: text,
+            type: 'text', // ضيف النوع هنا عشان التمييز
+            timestamp: serverTimestamp()
         });
     }
+};
 
-    document.getElementById('msgInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') window.sendMessage();
+window.uploadChatImage = async (file) => {
+    if (!file) return;
+    
+    // تغيير شكل الزرار لعلامة تحميل عشان اليوزر ميفضلش يدوس كتير
+    const clipBtn = document.querySelector('button[onclick*="imageInput"]');
+    const originalContent = clipBtn.innerHTML;
+    clipBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    clipBtn.style.pointerEvents = 'none';
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "sanaayi_preset");
+
+    try {
+        const res = await fetch("https://api.cloudinary.com/v1_1/dt82jyqtj/image/upload", {
+            method: "POST",
+            body: formData
+        });
+        const data = await res.json();
+
+        if (data.secure_url) {
+            await addDoc(collection(db, "orders", orderId, "messages"), {
+                senderId: currentUser.uid,
+                text: data.secure_url,
+                type: 'image', 
+                timestamp: serverTimestamp()
+            });
+        }
+    } catch (e) { 
+        alert("فشل رفع الصورة"); 
+    } finally {
+        // رجع الزرار لشكلة الطبيعي
+        clipBtn.innerHTML = originalContent;
+        clipBtn.style.pointerEvents = 'auto';
+    }
+};
+
+
+    function listenToMessages() {
+    const q = query(collection(db, "orders", orderId, "messages"), orderBy("timestamp", "asc"));
+    onSnapshot(q, (snapshot) => {
+        const chatBox = document.getElementById('chatBox');
+        chatBox.innerHTML = '';
+        snapshot.forEach((doc) => {
+            const msg = doc.data();
+            const isMine = msg.senderId === currentUser.uid;
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${isMine ? 'sent' : 'received'}`;
+            
+            const time = msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}) : '';
+
+            // الفحص الذكي: هل الرسالة نص أم رابط صورة من Cloudinary؟
+            const isImage = msg.type === 'image' || (msg.text && msg.text.startsWith('https://res.cloudinary.com'));
+
+            if (isImage) {
+                // عرض الصورة بشكل أنيق
+                msgDiv.innerHTML = `
+                    <div class="image-bubble">
+                        <img src="${msg.text}" style="max-width: 200px; max-height: 300px; border-radius: 10px; display: block; cursor: pointer; object-fit: cover;" 
+                             onclick="window.open('${msg.text}', '_blank')">
+                        <span class="time" style="display: block; text-align: left; margin-top: 4px; font-size: 10px; opacity: 0.7;">${time}</span>
+                    </div>
+                `;
+                msgDiv.style.background = "transparent"; // عشان الصورة تظهر لوحدها بشكل شيك
+                msgDiv.style.padding = "0"; 
+            } else {
+                // عرض الرسالة النصية الأصلية
+                msgDiv.innerHTML = `
+                    <div class="text-bubble">
+                        ${msg.text}
+                        <span class="time" style="font-size: 10px; opacity: 0.7; margin-right: 8px;">${time}</span>
+                    </div>
+                `;
+            }
+
+            chatBox.appendChild(msgDiv);
+        });
+        chatBox.scrollTop = chatBox.scrollHeight;
     });
+}
+
+document.getElementById('msgInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault(); // منع السطر الجديد عند الضغط على Enter
+        window.sendMessage();
+    }
+});
+
+
 </script>
 
 
