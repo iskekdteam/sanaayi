@@ -415,23 +415,31 @@
 
 
 <div id="finishOrderModal" class="modal-overlay">
-    <div class="modal-sheet">
-        <div style="width: 40px; height: 5px; background: #e2e8f0; margin: -10px auto 20px; border-radius: 10px;"></div>
-        <h3 style="margin: 0 0 10px; font-weight: 800; color: var(--primary);">إكمال المهمة</h3>
-        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
-            حول النسبة لرقم: <span style="color: #d63384; font-weight: bold;">01104452609</span>
-        </p>
-        
-        <input type="number" id="finalPriceInput" class="form-input" placeholder="إجمالي المبلغ المحصل">
-        <input type="url" id="payImgLink" class="form-input" placeholder="رابط سكرين شوت الدفع">
-        <input type="url" id="beforeImgLink" class="form-input" placeholder="رابط صورة العمل (قبل)">
-        <input type="url" id="afterImgLink" class="form-input" placeholder="رابط صورة العمل (بعد)">
+<div class="modal-sheet">
+    <div style="width: 40px; height: 5px; background: #e2e8f0; margin: -10px auto 20px; border-radius: 10px;"></div>
+    <h3 style="margin: 0 0 10px; font-weight: 800; color: var(--primary);">إكمال المهمة</h3>
+    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
+        حول النسبة لـ: <span style="color: #d63384; font-weight: bold;">01104452609</span>
+    </p>
+    
+    <label style="font-size: 0.8rem; font-weight: bold;">إجمالي المبلغ المحصل:</label>
+    <input type="number" id="finalPriceInput" class="form-input" placeholder="مثال: 500">
 
-        <button onclick="submitFinalReport()" id="confirmFinishBtn" class="btn-modern btn-accept" style="width: 100%; margin-top: 10px;">
-            تأكيد وإنهاء المهمة
-        </button>
-        <button onclick="closeModal()" class="btn-modern" style="width: 100%; background: transparent; color: #64748b;">إلغاء</button>
-    </div>
+    <label style="font-size: 0.8rem; font-weight: bold;">إثبات الدفع (سكرين شوت):</label>
+    <input type="file" id="payFile" class="form-input" accept="image/*">
+
+    <label style="font-size: 0.8rem; font-weight: bold;">صورة العمل (قبل):</label>
+    <input type="file" id="beforeFile" class="form-input" accept="image/*">
+
+    <label style="font-size: 0.8rem; font-weight: bold;">صورة العمل (بعد):</label>
+    <input type="file" id="afterFile" class="form-input" accept="image/*">
+
+    <button onclick="submitFinalReport()" id="confirmFinishBtn" class="btn-modern btn-accept" style="width: 100%; margin-top: 10px;">
+        تأكيد وإنهاء المهمة
+    </button>
+    <button onclick="closeModal()" class="btn-modern" style="width: 100%; background: transparent; color: #64748b;">إلغاء</button>
+</div>
+
 </div>
 
 <script type="module">
@@ -461,7 +469,7 @@
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
             const data = userDoc.data();
-            if(data.role !== 'provider') window.location.href = "client.html";
+            if(data.role !== 'provider') window.location.href = "login.html";
             
             // --- التعديل الجديد: التحقق من المديونية ---
             const debt = data.debt || 0; // تأكد أن هناك حقل في الداتا بيز باسم debt
@@ -479,6 +487,11 @@
             // ------------------------------------------
 
             document.getElementById('provName').innerText = `يا ${data.name.split(' ')[0]}`;
+            // تحديث صورة الفني في الهيدر
+if (data.profilePic) {
+    document.querySelector('.avatar').innerHTML = `<img src="${data.profilePic}" style="width:100%; height:100%; border-radius:18px; object-fit:cover;">`;
+}
+
             document.getElementById('provSpec').innerText = `فني ${data.specialization}`;
             isOnline = data.isOnline;
             updateStatusUI();
@@ -587,33 +600,61 @@
 
     window.closeModal = () => { document.getElementById('finishOrderModal').style.display = 'none'; };
 
-    window.submitFinalReport = async () => {
+    // 1. دالة مساعدة لرفع الملفات (لازم تكون موجودة داخل الـ script)
+async function uploadFile(file) {
+    if (!file) return null;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "sanaayi_preset"); // الـ preset بتاعك
+    
+    const res = await fetch("https://api.cloudinary.com/v1_1/dt82jyqtj/image/upload", {
+        method: "POST",
+        body: formData
+    });
+    const data = await res.json();
+    return data.secure_url;
+}
+
+// 2. الدالة المعدلة مع الحفاظ على كودك الأصلي
+window.submitFinalReport = async () => {
+    // جلب الملفات بدلاً من القيم النصية
     const price = document.getElementById('finalPriceInput').value;
-    const payUrl = document.getElementById('payImgLink').value;
-    const beforeUrl = document.getElementById('beforeImgLink').value;
-    const afterUrl = document.getElementById('afterImgLink').value;
+    const payFile = document.getElementById('payFile').files[0];       // تعديل هنا
+    const beforeFile = document.getElementById('beforeFile').files[0]; // تعديل هنا
+    const afterFile = document.getElementById('afterFile').files[0];   // تعديل هنا
     const btn = document.getElementById('confirmFinishBtn');
 
-    if (!price || !payUrl || !beforeUrl || !afterUrl) return alert("⚠️ أكمل البيانات المطلوبة");
+    // التحقق من وجود الملفات
+    if (!price || !payFile || !beforeFile || !afterFile) {
+        return alert("⚠️ يا هندسة لازم ترفع كل الصور وتكتب المبلغ");
+    }
 
-    btn.disabled = true; btn.innerText = "جاري الإرسال...";
+    btn.disabled = true; 
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري رفع الصور...'; // شكل احترافي
 
     try {
-        // 1. تحديث حالة الطلب وإضافة بيانات الإكمال
+        // --- الجزء الجديد: رفع الصور لـ Cloudinary ---
+        // بنرفع الـ 3 صور مع بعض عشان منضيعش وقت
+        const [payUrl, beforeUrl, afterUrl] = await Promise.all([
+            uploadFile(payFile),
+            uploadFile(beforeFile),
+            uploadFile(afterFile)
+        ]);
+
+        // 1. تحديث حالة الطلب وإضافة بيانات الإكمال (باستخدام الروابط الجديدة)
         await updateDoc(doc(db, "orders", currentActiveOrderId), {
             status: 'completed', 
             finalPrice: price, 
-            paymentProofImg: payUrl,
+            paymentProofImg: payUrl,  // دي الروابط اللي رجعت من Cloudinary
             workBeforeImg: beforeUrl, 
             workAfterImg: afterUrl, 
             completedAt: new Date()
         });
 
-        // 2. تحديث مديونية الفني (إضافة 10% عمولة المنصة)
-        const commission = Number(price) * 0.10; // حساب الـ 10%
+        // 2. تحديث مديونية الفني (زي ما هو في كودك)
+        const commission = Number(price) * 0.10;
         const userRef = doc(db, "users", auth.currentUser.uid);
         
-        // جلب الديون الحالية لإضافة العمولة الجديدة عليها
         const userSnap = await getDoc(userRef);
         const currentDebt = userSnap.data().debt || 0;
 
@@ -624,16 +665,16 @@
         closeModal();
         alert(`✅ تم إنهاء المهمة. عمولة المنصة المستحقة: ${commission} ج.م`);
         
-        // إعادة تحميل الصفحة لتفعيل الحظر فوراً إذا تجاوز الـ 200 جنيه
         location.reload();
 
     } catch (e) { 
-        alert("حدث خطأ: " + e.message); 
+        alert("حدث خطأ أثناء الرفع: " + e.message); 
     } finally { 
         btn.disabled = false; 
         btn.innerText = "تأكيد وإنهاء المهمة"; 
     }
 };
+
 
 
     window.auth = { signOut: () => signOut(auth) };
