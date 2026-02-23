@@ -374,7 +374,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
             }
             loadProviders(); 
         } else {
-            window.location.href = "index.html"; 
+            window.location.href = "login.html"; 
         }
     });
 
@@ -456,19 +456,23 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
         querySnapshot.forEach((doc) => {
             const p = doc.data();
+            
+            // السطر الجديد: بيشوف لو فيه صورة بروفايل حقيقية نستخدمها، وإلا نستخدم الـ Avatar الافتراضي
+            const userImage = p.profilePic ? p.profilePic : `https://ui-avatars.com/api/?name=${p.name}&background=ff5a00&color=fff`;
+
             const card = `
                 <div class="pro-card" onclick="window.openOrder('${doc.id}', '${p.name}')">
-                    <img src="https://ui-avatars.com/api/?name=${p.name}&background=ff5a00&color=fff" alt="Worker">
+                    <img src="${userImage}" alt="Worker" onerror="this.src='https://ui-avatars.com/api/?name=${p.name}&background=ff5a00&color=fff'">
+                    
                     <div class="pro-info">
                         <h4>${p.name}</h4>
                         <p><i class="fa-solid fa-screwdriver-wrench"></i> ${p.specialization}</p>
                         <div class="rating">
-    <i class="fa-solid fa-star" style="color: #ffc107;"></i> 
-    ${p.rating ? p.rating : '0.0'} 
-    <span style="font-size: 10px; color: #aaa;">(${p.reviewsCount || 0})</span>
-</div>
-
-                    <div class="price-tag">طلب الآن</div>
+                            <i class="fa-solid fa-star" style="color: #ffc107;"></i> 
+                            ${p.rating ? p.rating : '0.0'} 
+                            <span style="font-size: 10px; color: #aaa;">(${p.reviewsCount || 0})</span>
+                        </div>
+                    </div> <div class="price-tag">طلب الآن</div>
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', card);
@@ -478,6 +482,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
         container.innerHTML = '<p style="text-align:center; color:red;">حدث خطأ أثناء تحميل البيانات، يرجى المحاولة لاحقاً.</p>';
     }
 }
+
 
 
     // 3. الدوال العامة
